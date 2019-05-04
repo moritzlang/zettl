@@ -5,15 +5,16 @@
  *
  */
 
-import React from 'react';
-import { FormattedMessage } from 'react-intl';
+import React from 'react'
 
-import messages from './messages';
+import { Wrapper, Text } from './Styles'
 
 export default function NotFound() {
   return (
-    <h1>
-      <FormattedMessage {...messages.header} />
-    </h1>
-  );
+    <Wrapper>
+      <Text>
+        Sorry, page not found 🐿.
+      </Text>
+    </Wrapper>
+  )
 }
