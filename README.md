@@ -1,5 +1,5 @@
 # zettl 📝
-A fully offline shopping list app. Like a real "zettl" but on your phone.
+A fully offline shopping list app. Like a real piece of paper but on your phone.
 
 ## Installation and Usage
 First install all dependencies:
