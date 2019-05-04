@@ -30,6 +30,7 @@ export const GREEN_900 = "#014D40"
 
 // Neutral
 export const BACKGROUND_COLOR = '#F9F7F3'
+export const BACKGROUND_COLOR_SHADE = '#E3DED6'
 
 export const WHITE = "#FFFFFF"
 
