@@ -1,4 +1,5 @@
-import { createGlobalStyle } from 'styled-components';
+import { createGlobalStyle } from 'styled-components'
+import { BACKGROUND_COLOR_SHADE } from 'styles/colors'
 
 const GlobalStyle = createGlobalStyle`
   html,
@@ -16,7 +17,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   #app {
-    background-color: #fafafa;
+    background-color: ${BACKGROUND_COLOR_SHADE};
     min-height: 100%;
     min-width: 100%;
   }
@@ -26,6 +27,6 @@ const GlobalStyle = createGlobalStyle`
     font-family: Georgia, Times, 'Times New Roman', serif;
     line-height: 1.5em;
   }
-`;
+`
 
-export default GlobalStyle;
+export default GlobalStyle
