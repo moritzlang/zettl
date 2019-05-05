@@ -11,7 +11,6 @@ import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 
 // import firebase from 'firebase'
-// import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth'
 
 import JssProvider from 'react-jss/lib/JssProvider'
 import { create } from 'jss'
@@ -24,7 +23,7 @@ import MenuAppBar from 'components/MenuAppBar'
 import HomePage from 'containers/HomePage/Loadable'
 import LoginPage from 'containers/LoginPage/Loadable'
 import NotFoundPage from 'containers/NotFoundPage/Loadable'
-import PrivateRoute from './PrivateRoute'
+import RedirectRoute from './RedirectRoute'
 import theme from './theme'
 
 import { Wrapper } from './Styles'
@@ -39,20 +38,34 @@ const jss = create({
   insertionPoint: document.getElementById('jss-insertion-point'),
 })
 
-export default function App() {
-  return (
-    <JssProvider jss={jss} generateClassName={generateClassName}>
-      <MuiThemeProvider theme={theme}>
-        <MenuAppBar />
-        <Wrapper>
-          <Switch>
-            <PrivateRoute exact path='/' component={HomePage} />
-            <Route path="/login" component={LoginPage} />
-            <Route component={NotFoundPage} />
-          </Switch>
-        </Wrapper>
-        <GlobalStyle />
-      </MuiThemeProvider>
-    </JssProvider>
-  )
+
+export class App extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      isAuthed: false,
+    }
+  }
+
+  render() {
+    const { isAuthed } = this.state
+
+    return (
+      <JssProvider jss={jss} generateClassName={generateClassName}>
+        <MuiThemeProvider theme={theme}>
+          <MenuAppBar />
+          <Wrapper>
+            <Switch>
+              <RedirectRoute condition={isAuthed} redirectPath='/login' exact path='/' component={HomePage} />
+              <RedirectRoute condition={!isAuthed} redirectPath='/' path='/login' component={LoginPage} />
+              <Route component={NotFoundPage} />
+            </Switch>
+          </Wrapper>
+          <GlobalStyle />
+        </MuiThemeProvider>
+      </JssProvider>
+    )
+  }
 }
+
+export default App
