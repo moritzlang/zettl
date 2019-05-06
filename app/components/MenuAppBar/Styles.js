@@ -18,6 +18,22 @@ export const StyledListItem = styled(ListItem)`
   height: 70px;
 `
 
+export const StyledInfoListItemText = styled(ListItemText)`
+  && {
+    padding: 0 14px;
+    padding-top: 10px;
+
+    > span {
+      font-size: 22px;
+      margin-bottom: 0.5em;
+    }
+
+    > p {
+      font-size: 16px;
+    }
+  }
+`
+
 export const StyledListItemText = styled(ListItemText)`
   > * {
     white-space: nowrap;
