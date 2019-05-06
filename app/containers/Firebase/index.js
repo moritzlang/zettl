@@ -1,5 +1,8 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
+import 'firebase/firestore'
+
+import { fromJS, List } from 'immutable'
 
 const config = {
   apiKey: 'AIzaSyAEky8TexWlTfJYkcUCmSMfcqdxoFeZOXA',
@@ -17,6 +20,7 @@ if(!firebase.apps.length) {
 
 export default {
   auth: () => firebase.auth(),
+  db: firebase.firestore(),
   authUser: () =>
     new Promise((resolve, reject) => {
       firebase.auth().onAuthStateChanged(user => {
@@ -44,4 +48,14 @@ export default {
       window.location.assign('/privacy-policy')
     },
   },
+  articles: new Promise((resolve) => {
+    // TODO: order by created_at timestamp
+    firebase.firestore().collection('articles').get()
+      .then(collection =>
+        collection.docs.reduce((checked, doc) => {
+          checked.push(fromJS({ id: doc.id, ...doc.data() }))
+          return checked
+        }, []))
+      .then((articles) => resolve(List(articles)))
+  }),
 }
