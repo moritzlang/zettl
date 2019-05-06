@@ -29,18 +29,6 @@ export class HomePage extends React.PureComponent {
     this.props.onAddArticle(value)
   }
 
-  send = () => {
-    const { inputValue } = this.state
-
-    if(inputValue) {
-      // Save new article to DB
-
-      this.setState({
-        inputValue: '',
-      })
-    }
-  }
-
   handleCheckToggle = (id, value) => {
     this.props.onToggleArticle({ id, value })
   }
