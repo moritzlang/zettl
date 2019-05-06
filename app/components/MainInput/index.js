@@ -17,8 +17,13 @@ export class MainInput extends React.PureComponent {
   handleKeyPress = (e) => {
     const { value } = this.state
     if(e.key === 'Enter' && value) {
-      this.props.onSubmit(value)
+      this.submit(value)
     }
+  }
+
+  submit = (value) => {
+    this.props.onSubmit(value)
+    this.setState({ value: '' })
   }
 
   render() {
