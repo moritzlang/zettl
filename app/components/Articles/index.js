@@ -27,7 +27,7 @@ export class Articles extends React.PureComponent {
         style={{ transformOrigin: '50% 0 0' }}
         timeout={500}>
         <StyledList>
-          {articles.map(a => (
+          {articles.size ? articles.map(a => (
             <ListItemWrapper key={a.get('id')}>
               <StyledListItem role={undefined} dense button onClick={() => this.handleToggle(a.get('id'), !a.get('checked'))}>
                 <Checkbox
@@ -47,7 +47,14 @@ export class Articles extends React.PureComponent {
                 </ListItemSecondaryAction>
               </StyledListItem>
             </ListItemWrapper>
-          )).reverse()}
+          )).reverse()
+            // TODO: style empty state
+            : (
+              <div>
+                <h3>Your list is empty</h3>
+                <p>Start adding new items to the list and share it with other people.</p>
+              </div>
+            )}
         </StyledList>
       </Grow>
     )
