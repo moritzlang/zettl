@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Map } from 'immutable'
 import { compose } from 'redux'
 import { connect } from 'react-redux'
 import injectSaga from 'utils/injectSaga'
@@ -23,7 +24,7 @@ import NotFoundPage from 'containers/NotFoundPage/Loadable'
 import { signInUser } from 'containers/User/actions'
 import watchUserAuth from 'containers/User/sagas'
 import userAuthReducer from 'containers/User/reducers'
-import { makeSelectSuccessfulAuth } from 'containers/User/selectors'
+import { makeSelectAuthStatus } from 'containers/User/selectors'
 import RedirectRoute from './RedirectRoute'
 
 import theme from './theme'
@@ -40,21 +41,10 @@ const jss = create({
 
 
 export class App extends React.PureComponent {
-  constructor(props) {
-    super(props)
-    this.state = {
-      isAuthenticating: true,
-    }
-  }
-
   componentDidMount() {
     Firebase.authUser()
       .then(user => {
         this.props.onSignInUser(user)
-        this.setState({ isAuthenticating: false })
-      })
-      .catch(() => {
-        this.setState({ isAuthenticating: false })
       })
   }
 
@@ -64,10 +54,9 @@ export class App extends React.PureComponent {
   }
 
   render() {
-    const { isAuthenticating } = this.state
-    const { isAuthed } = this.props
+    const { authStatus } = this.props
 
-    if(isAuthenticating) return null
+    if(authStatus.get('authLoading')) return null
 
     return (
       <JssProvider jss={jss} generateClassName={generateClassName}>
@@ -75,8 +64,8 @@ export class App extends React.PureComponent {
           <MenuAppBar />
           <Wrapper>
             <Switch>
-              <RedirectRoute condition={isAuthed} redirectPath='/login' exact path='/' component={HomePage} />
-              <RedirectRoute condition={!isAuthed} redirectPath='/' path='/login' component={LoginPage} />
+              <RedirectRoute condition={authStatus.get('isAuthed')} redirectPath='/login' exact path='/' component={HomePage} />
+              <RedirectRoute condition={!authStatus.get('isAuthed')} redirectPath='/' path='/login' component={LoginPage} />
               <Route component={NotFoundPage} />
             </Switch>
           </Wrapper>
@@ -88,16 +77,16 @@ export class App extends React.PureComponent {
 }
 
 App.propTypes = {
-  isAuthed: PropTypes.bool,
+  authStatus: PropTypes.instanceOf(Map),
   onSignInUser: PropTypes.func.isRequired,
 }
 
 App.defaultProps = {
-  isAuthed: false,
+  authStatus: Map(),
 }
 
 const mapStateToProps = createStructuredSelector({
-  isAuthed: makeSelectSuccessfulAuth(),
+  authStatus: makeSelectAuthStatus(),
 })
 
 export function mapDispatchToProps(dispatch) {

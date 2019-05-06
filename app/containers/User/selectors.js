@@ -8,13 +8,15 @@ const makeSelectAuthResponse = () => createSelector(
   (user) => user
 )
 
-const makeSelectSuccessfulAuth = () => createSelector(
+const makeSelectAuthStatus = () => createSelector(
   selectUserAuth, 
-  (user) => user.get('details') ? !!user.get('details').size : false
+  (user) =>
+    user.delete('details')
+      .set('isAuthed', user.get('details') ? !!user.get('details').size : false)
 )
 
 export {
   selectUserAuth,
   makeSelectAuthResponse,
-  makeSelectSuccessfulAuth,
+  makeSelectAuthStatus,
 }
