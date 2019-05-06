@@ -12,7 +12,6 @@ export function* signInSaga(payload) {
   }
 }
 
-export default function* watchUserAuth() {
-  // watches for action and calls function, it only 'takes the latest' action
+export default function* userSaga() {
   yield takeLatest(SIGN_IN_USER, signInSaga)
 }

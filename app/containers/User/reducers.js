@@ -10,7 +10,7 @@ export const initialState = fromJS({
   details: Map(),
 })
 
-function userAuthReducer(state = initialState, action) {
+function userReducer(state = initialState, action) {
   const response = action.user
   
   switch (action.type) {
@@ -27,4 +27,4 @@ function userAuthReducer(state = initialState, action) {
   }
 }
 
-export default userAuthReducer
+export default userReducer
