@@ -44,7 +44,9 @@ export class HomePage extends React.PureComponent {
           autoComplete='off'
           onSubmit={this.handleSubmit}
         />
-        <Articles onToggle={this.handleCheckToggle} articles={articles.get('articles')} />
+        {!articles.get('articlesLoading')
+          ? <Articles onToggle={this.handleCheckToggle} articles={articles.get('articles')} />
+          : null}
       </Wrapper>
     )
   }
