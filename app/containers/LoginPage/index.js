@@ -1,6 +1,6 @@
 import React from 'react'
 
-import Firebase from 'components/Firebase'
+import Firebase from 'containers/Firebase'
 
 import { Headline, Introduction } from 'styles/typography'
 import { Wrapper, StyledAuthButtons } from './Styles'
