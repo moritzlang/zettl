@@ -7,11 +7,11 @@ import injectSaga from 'utils/injectSaga'
 import injectReducer from 'utils/injectReducer'
 import { createStructuredSelector } from 'reselect'
 
-import Firebase from 'components/Firebase'
-import { makeSelectAuthResponse, makeSelectSuccessfulAuth } from 'components/User/selectors'
-import { signOutUser } from 'components/User/actions'
-import watchUserAuth from 'components/User/sagas'
-import userAuthReducer from 'components/User/reducers'
+import Firebase from 'containers/Firebase'
+import { makeSelectAuthResponse, makeSelectSuccessfulAuth } from 'containers/User/selectors'
+import { signOutUser } from 'containers/User/actions'
+import userSaga from 'containers/User/sagas'
+import userReducer from 'containers/User/reducers'
 
 import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
@@ -166,7 +166,7 @@ MenuAppBar.propTypes = {
 }
 
 MenuAppBar.defaultProps = {
-  user: new Map(),
+  user: Map(),
   isAuthed: false,
 }
 
@@ -181,8 +181,8 @@ export function mapDispatchToProps(dispatch) {
   }
 }
 
-const withReducer = injectReducer({key: 'user', reducer: userAuthReducer})
-const withSaga = injectSaga({key: 'user', saga: watchUserAuth})
+const withReducer = injectReducer({key: 'user', reducer: userReducer})
+const withSaga = injectSaga({key: 'user', saga: userSaga})
 
 const withConnect = connect(
   mapStateToProps,
