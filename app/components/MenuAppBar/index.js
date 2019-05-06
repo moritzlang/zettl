@@ -1,10 +1,24 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { compose } from 'redux'
+import { connect } from 'react-redux'
+import { Map } from 'immutable'
+import injectSaga from 'utils/injectSaga'
+import injectReducer from 'utils/injectReducer'
+import { createStructuredSelector } from 'reselect'
+
+import Firebase from 'components/Firebase'
+import { makeSelectAuthResponse, makeSelectSuccessfulAuth } from 'components/User/selectors'
+import { signOutUser } from 'components/User/actions'
+import watchUserAuth from 'components/User/sagas'
+import userAuthReducer from 'components/User/reducers'
+
 import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import IconButton from '@material-ui/core/IconButton'
 import { ZettlIcon, MenuIcon, InstallIcon, NotificationIcon, LogoutIcon } from 'images/icons'
 import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
@@ -13,26 +27,28 @@ import Divider from '@material-ui/core/Divider'
 import ListItemAvatar from '@material-ui/core/ListItemAvatar'
 import Avatar from '@material-ui/core/Avatar'
 
-import { styles, StyledSwipeableDrawer, StyledAppBar, StyledListItem, StyledListItemText } from './Styles'
+import { styles, StyledSwipeableDrawer, StyledAppBar, StyledListItem, StyledListItemText, StyledInfoListItemText } from './Styles'
 
-class MenuAppBar extends React.Component {
-  state = {
-    isAuthenticated: false,
-    drawerOpen: false,
-    allowNotifications: false,
-  };
+export class MenuAppBar extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      drawerOpen: false,
+      allowNotifications: false,
+    }
+  }
 
-  toggleDrawer = (open) => () => {
+  toggleDrawer = (open) => {
     this.setState({ drawerOpen: open })
   }
 
-  toggleNotifications = () => () => {
+  toggleNotifications = () => {
     this.setState((prevState) => ({ allowNotifications: !prevState.allowNotifications }))
   }
 
   render() {
-    const { classes } = this.props
-    const { allowNotifications, isAuthenticated } = this.state
+    const { classes, isAuthed } = this.props
+    const { allowNotifications } = this.state
 
     const loggedInList = (
       <List className={classes.root}>
@@ -40,25 +56,25 @@ class MenuAppBar extends React.Component {
           <ListItemAvatar>
             <Avatar
               alt='Avatar'
-              src='https://material-ui.com/static/images/avatar/2.jpg' />
+              src={this.props.user.getIn(['details', 'photoURL'])} />
           </ListItemAvatar>
           <StyledListItemText
-            primary='Moritz Lang'
-            secondary='moritzlang@outlook.com' />
+            primary={this.props.user.getIn(['details', 'displayName'])}
+            secondary={this.props.user.getIn(['details', 'email'])} />
         </StyledListItem>
 
         <Divider />
 
         <StyledListItem
           button
-          onClick={this.toggleNotifications()} >
+          onClick={() => this.toggleNotifications()} >
           <ListItemIcon>
             <NotificationIcon />
           </ListItemIcon>
           <ListItemText primary='Notifications' />
           <ListItemSecondaryAction>
             <Switch
-              onClick={this.toggleNotifications()}
+              onClick={() => this.toggleNotifications()}
               checked={allowNotifications}
               disableRipple
               classes={{
@@ -78,7 +94,13 @@ class MenuAppBar extends React.Component {
           <ListItemText primary='Install' />
         </StyledListItem>
 
-        <StyledListItem button>
+        <StyledListItem
+          button
+          onClick={() => {
+            Firebase.signOut()
+              .then(() => this.props.onSignOutUser())
+              .then(() => this.toggleDrawer(false))
+          }}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
@@ -89,12 +111,12 @@ class MenuAppBar extends React.Component {
 
     const loggedOutList = (
       <List className={classes.root}>
-        <StyledListItem>
-          <ListItemText
-            primary='Login'
-            secondary='Lorem ispum dolor set emit'
+        <ListItem>
+          <StyledInfoListItemText
+            primary='About'
+            secondary='zettl is a fully offline shopping list app. Like a real piece of paper but on your phone.'
           />
-        </StyledListItem>
+        </ListItem>
       </List>
     )
 
@@ -110,7 +132,7 @@ class MenuAppBar extends React.Component {
               className={classes.menuButton}
               aria-label='Menu'
               color='inherit'
-              onClick={this.toggleDrawer(true)} >
+              onClick={() => this.toggleDrawer(true)} >
               <MenuIcon />
             </IconButton>
           </Toolbar>
@@ -118,13 +140,13 @@ class MenuAppBar extends React.Component {
         <StyledSwipeableDrawer
           anchor='right'
           open={this.state.drawerOpen}
-          onClose={this.toggleDrawer(false)}
-          onOpen={this.toggleDrawer(true)} >
+          onClose={() => this.toggleDrawer(false)}
+          onOpen={() => this.toggleDrawer(true)} >
           <div
             tabIndex={0}
             role='button'
-            onKeyDown={this.toggleDrawer(false)} >
-            {isAuthenticated ? loggedInList : loggedOutList}
+            onKeyDown={() => this.toggleDrawer(false)} >
+            {isAuthed ? loggedInList : loggedOutList}
           </div>
         </StyledSwipeableDrawer>
       </div>
@@ -136,4 +158,40 @@ MenuAppBar.propTypes = {
   classes: PropTypes.object.isRequired,
 }
 
-export default withStyles(styles)(MenuAppBar)
+
+MenuAppBar.propTypes = {
+  isAuthed: PropTypes.bool,
+  user: PropTypes.instanceOf(Map),
+  onSignOutUser: PropTypes.func.isRequired,
+}
+
+MenuAppBar.defaultProps = {
+  user: new Map(),
+  isAuthed: false,
+}
+
+const mapStateToProps = createStructuredSelector({
+  user: makeSelectAuthResponse(),
+  isAuthed: makeSelectSuccessfulAuth(),
+})
+
+export function mapDispatchToProps(dispatch) {
+  return {
+    onSignOutUser: () => dispatch(signOutUser()),
+  }
+}
+
+const withReducer = injectReducer({key: 'user', reducer: userAuthReducer})
+const withSaga = injectSaga({key: 'user', saga: watchUserAuth})
+
+const withConnect = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)
+
+export default compose(
+  withReducer,
+  withSaga,
+  withConnect,
+  withStyles(styles),
+)(MenuAppBar)
