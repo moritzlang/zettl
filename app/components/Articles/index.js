@@ -47,7 +47,7 @@ export class Articles extends React.PureComponent {
                 </ListItemSecondaryAction>
               </StyledListItem>
             </ListItemWrapper>
-          ))}      
+          )).reverse()}
         </StyledList>
       </Grow>
     )

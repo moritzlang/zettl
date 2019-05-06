@@ -49,8 +49,7 @@ export default {
     },
   },
   articles: new Promise((resolve) => (
-    // TODO: order by created_at timestamp
-    firebase.firestore().collection('articles').get()
+    firebase.firestore().collection('articles').orderBy('updated_at', 'asc').get()
       .then(collection =>
         collection.docs.reduce((checked, doc) => {
           checked.push(fromJS({ id: doc.id, ...doc.data() }))

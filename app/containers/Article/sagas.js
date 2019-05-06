@@ -31,6 +31,7 @@ export function* addArticle(payload) {
       id: uuid(),
       value: payload.data,
       checked: false,
+      updated_at: new Date(),
     }
     Firebase.addArticle(newArticle)
     yield put(articleAdded(newArticle))
