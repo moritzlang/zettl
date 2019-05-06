@@ -48,7 +48,7 @@ export default {
       window.location.assign('/privacy-policy')
     },
   },
-  articles: new Promise((resolve) => {
+  articles: new Promise((resolve) => (
     // TODO: order by created_at timestamp
     firebase.firestore().collection('articles').get()
       .then(collection =>
@@ -57,5 +57,11 @@ export default {
           return checked
         }, []))
       .then((articles) => resolve(List(articles)))
-  }),
+  )),
+  updateArticle: (id, field, value) => (
+    new Promise((resolve) => {
+      firebase.firestore().collection('articles').doc(id).update({ [field]: value })
+        .then(res => resolve(res))
+    })
+  ),
 }
