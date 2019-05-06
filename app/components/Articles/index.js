@@ -14,8 +14,8 @@ import { StyledList, StyledListItem, ListItemWrapper, StyledListItemText } from 
 
 export class Articles extends React.PureComponent {
 
-  handleToggle = id => {
-    this.props.onToggle(id)
+  handleToggle = (id, value) => {
+    this.props.onToggle(id, value)
   }
 
   render() {
@@ -29,7 +29,7 @@ export class Articles extends React.PureComponent {
         <StyledList>
           {articles.map(a => (
             <ListItemWrapper key={a.get('id')}>
-              <StyledListItem role={undefined} dense button onClick={() => this.handleToggle(a.get('id'))}>
+              <StyledListItem role={undefined} dense button onClick={() => this.handleToggle(a.get('id'), !a.get('checked'))}>
                 <Checkbox
                   checked={a.get('checked')}
                   tabIndex={-1}

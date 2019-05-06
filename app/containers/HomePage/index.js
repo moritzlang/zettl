@@ -13,7 +13,7 @@ import MainInput from 'components/MainInput'
 import Articles from 'components/Articles'
 
 import { makeSelectArticles } from 'containers/Article/selectors'
-import { loadArticles } from 'containers/Article/actions'
+import { loadArticles, toggleArticle } from 'containers/Article/actions'
 import articleSaga from 'containers/Article/sagas'
 import articleReducer from 'containers/Article/reducers'
 
@@ -26,6 +26,7 @@ export class HomePage extends React.PureComponent {
   }
 
   handleSubmit = (value) => {
+    console.log(value)
     // TODO: Get id for article from backend
     // TODO: Add new article to the store
   }
@@ -42,8 +43,8 @@ export class HomePage extends React.PureComponent {
     }
   }
 
-  handleCheckToggle = id => {
-    console.log(id)
+  handleCheckToggle = (id, value) => {
+    this.props.onToggleArticle({ id, value })
   }
 
   render() {
@@ -65,6 +66,7 @@ export class HomePage extends React.PureComponent {
 
 HomePage.propTypes = {
   onLoadArticles: PropTypes.func.isRequired,
+  onToggleArticle: PropTypes.func.isRequired,
   articles: ImmutablePropTypes.mapContains({
     articles: ImmutablePropTypes.listOf(
       ImmutablePropTypes.mapContains({
@@ -87,6 +89,7 @@ const mapStateToProps = createStructuredSelector({
 export function mapDispatchToProps(dispatch) {
   return {
     onLoadArticles: () => dispatch(loadArticles()),
+    onToggleArticle: data => dispatch(toggleArticle(data)),
   }
 }
 
