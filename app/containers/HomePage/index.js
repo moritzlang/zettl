@@ -1,50 +1,33 @@
 import React from 'react'
+import PropTypes from 'prop-types'
+import ImmutablePropTypes from 'react-immutable-proptypes'
+
+import { compose } from 'redux'
+import { connect } from 'react-redux'
+import { List } from 'immutable'
+import injectSaga from 'utils/injectSaga'
+import injectReducer from 'utils/injectReducer'
+import { createStructuredSelector } from 'reselect'
 
 import MainInput from 'components/MainInput'
 import Articles from 'components/Articles'
 
+import { makeSelectArticles } from 'containers/Article/selectors'
+import { loadArticles } from 'containers/Article/actions'
+import articleSaga from 'containers/Article/sagas'
+import articleReducer from 'containers/Article/reducers'
+
 import { Wrapper } from './Styles'
 
 export class HomePage extends React.PureComponent {
-  constructor(props) {
-    super(props)
-    this.state = {
-      articles: [
-        {
-          id: 1,
-          value: 'Gemüse',
-          checked: true,
-        },
-        {
-          id: 2,
-          value: 'Obst',
-          checked: false,
-        },
-        {
-          id: 3,
-          value: 'Brot',
-          checked: true,
-        },
-        {
-          id: 4,
-          value: 'Unbekannter Artikel mit einem sehr langen Namen das kann kritisch werden',
-          checked: false,
-        }, 
-      ],
-    }
+
+  componentDidMount() {
+    this.props.onLoadArticles()
   }
 
   handleSubmit = (value) => {
     // TODO: Get id for article from backend
-    const newArticle = {
-      id: 5,
-      value,
-      checked: false,
-    }
-
-    this.setState(prevState => ({
-      articles: [newArticle, ...prevState.articles],
-    }))
+    // TODO: Add new article to the store
   }
 
   send = () => {
@@ -59,8 +42,12 @@ export class HomePage extends React.PureComponent {
     }
   }
 
+  handleCheckToggle = id => {
+    console.log(id)
+  }
+
   render() {
-    const { articles } = this.state
+    const { articles } = this.props
 
     return (
       <Wrapper>
@@ -70,10 +57,49 @@ export class HomePage extends React.PureComponent {
           autoComplete='off'
           onSubmit={this.handleSubmit}
         />
-        <Articles articles={articles} />
+        <Articles onToggle={this.handleCheckToggle} articles={articles.get('articles')} />
       </Wrapper>
     )
   }
 }
 
-export default HomePage
+HomePage.propTypes = {
+  onLoadArticles: PropTypes.func.isRequired,
+  articles: ImmutablePropTypes.mapContains({
+    articles: ImmutablePropTypes.listOf(
+      ImmutablePropTypes.mapContains({
+        id: PropTypes.string,
+        value: PropTypes.string,
+        checked: PropTypes.bool,
+      })
+    ),
+  }),
+}
+
+HomePage.defaultProps = {
+  articles: List(),
+}
+
+const mapStateToProps = createStructuredSelector({
+  articles: makeSelectArticles(),
+})
+
+export function mapDispatchToProps(dispatch) {
+  return {
+    onLoadArticles: () => dispatch(loadArticles()),
+  }
+}
+
+const withReducer = injectReducer({key: 'articles', reducer: articleReducer})
+const withSaga = injectSaga({key: 'articles', saga: articleSaga})
+
+const withConnect = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)
+
+export default compose(
+  withReducer,
+  withSaga,
+  withConnect
+)(HomePage)
