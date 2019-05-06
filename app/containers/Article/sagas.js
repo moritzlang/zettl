@@ -18,7 +18,6 @@ export function* toggleArticle(payload) {
   try {
     const { id, value } = payload.data
     Firebase.updateArticle(id, 'checked', value)
-    console.log("test")
     yield put(articlesToggled(payload.data))
   } catch (err) {
     yield put(articlesTogglingError(err))
