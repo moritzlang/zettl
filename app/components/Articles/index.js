@@ -2,15 +2,11 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import ImmutablePropTypes from 'react-immutable-proptypes'
 
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import Checkbox from '@material-ui/core/Checkbox'
-import IconButton from '@material-ui/core/IconButton'
-import Tooltip from '@material-ui/core/Tooltip'
 import Grow from '@material-ui/core/Grow'
 
-import * as Color from 'styles/colors'
-import { CheckboxIcon, CheckboxCheckedIcon, CloseIcon } from 'images/icons'
-import { StyledList, StyledListItem, ListItemWrapper, StyledListItemText } from './Styles'
+import Article from 'components/Article'
+
+import { StyledList } from './Styles'
 
 export class Articles extends React.PureComponent {
 
@@ -20,7 +16,6 @@ export class Articles extends React.PureComponent {
 
   render() {
     const { articles } = this.props
-
     return (
       <Grow
         in
@@ -28,25 +23,11 @@ export class Articles extends React.PureComponent {
         timeout={500}>
         <StyledList>
           {articles.size ? articles.map(a => (
-            <ListItemWrapper key={a.get('id')}>
-              <StyledListItem role={undefined} dense button onClick={() => this.handleToggle(a.get('id'), !a.get('checked'))}>
-                <Checkbox
-                  checked={a.get('checked')}
-                  tabIndex={-1}
-                  icon={<CheckboxIcon />}
-                  checkedIcon={<CheckboxCheckedIcon colors={{ primary: Color.GREEN_300 }} />}
-                  disableRipple />
-                <StyledListItemText primary={a.get('value')} />
-                <ListItemSecondaryAction>
-                  <Tooltip title='Delete' placement='left'>
-                    <IconButton
-                      aria-label='Delete'>
-                      <CloseIcon colors={{ primary: Color.GRAY_200 }} />
-                    </IconButton>
-                  </Tooltip>
-                </ListItemSecondaryAction>
-              </StyledListItem>
-            </ListItemWrapper>
+            <Article
+              key={a.get('id')}
+              id={a.get('id')}
+              value={a.get('value')}
+              checked={a.get('checked')}/>
           )).reverse()
             // TODO: style empty state
             : (
