@@ -46,7 +46,7 @@ function articleReducer(state = initialState, action) {
     case ADD_ARTICLE_SUCCESS:
       return state
         .set('addArticleLoading', false)
-        .set('articles', response)
+        .update('articles', articles => articles.push(fromJS(response)))
     case ADD_ARTICLE_ERROR:
       return state
         .set('addArticleLoading', false)

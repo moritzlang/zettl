@@ -13,7 +13,7 @@ import MainInput from 'components/MainInput'
 import Articles from 'components/Articles'
 
 import { makeSelectArticles } from 'containers/Article/selectors'
-import { loadArticles, toggleArticle } from 'containers/Article/actions'
+import { loadArticles, toggleArticle, addArticle } from 'containers/Article/actions'
 import articleSaga from 'containers/Article/sagas'
 import articleReducer from 'containers/Article/reducers'
 
@@ -26,9 +26,7 @@ export class HomePage extends React.PureComponent {
   }
 
   handleSubmit = (value) => {
-    console.log(value)
-    // TODO: Get id for article from backend
-    // TODO: Add new article to the store
+    this.props.onAddArticle(value)
   }
 
   send = () => {
@@ -67,6 +65,7 @@ export class HomePage extends React.PureComponent {
 HomePage.propTypes = {
   onLoadArticles: PropTypes.func.isRequired,
   onToggleArticle: PropTypes.func.isRequired,
+  onAddArticle: PropTypes.func.isRequired,
   articles: ImmutablePropTypes.mapContains({
     articles: ImmutablePropTypes.listOf(
       ImmutablePropTypes.mapContains({
@@ -90,6 +89,7 @@ export function mapDispatchToProps(dispatch) {
   return {
     onLoadArticles: () => dispatch(loadArticles()),
     onToggleArticle: data => dispatch(toggleArticle(data)),
+    onAddArticle: data => dispatch(addArticle(data)),
   }
 }
 

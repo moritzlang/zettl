@@ -58,9 +58,12 @@ export default {
         }, []))
       .then((articles) => resolve(List(articles)))
   )),
-  updateArticle: (id, field, value) => (
+  addArticle: article => (
+    firebase.firestore().collection('articles').doc(article.id).set(article)
+  ),
+  updateArticle: (id, data) => (
     new Promise((resolve) => {
-      firebase.firestore().collection('articles').doc(id).update({ [field]: value })
+      firebase.firestore().collection('articles').doc(id).update(data)
         .then(res => resolve(res))
     })
   ),
