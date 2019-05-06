@@ -7,7 +7,7 @@ import injectReducer from 'utils/injectReducer'
 import { createStructuredSelector } from 'reselect'
 import { Switch, Route } from 'react-router-dom'
 
-import Firebase from 'components/Firebase'
+import Firebase from 'containers/Firebase'
 
 import JssProvider from 'react-jss/lib/JssProvider'
 import { create } from 'jss'
@@ -20,10 +20,10 @@ import MenuAppBar from 'components/MenuAppBar'
 import HomePage from 'containers/HomePage/Loadable'
 import LoginPage from 'containers/LoginPage/Loadable'
 import NotFoundPage from 'containers/NotFoundPage/Loadable'
-import { signInUser } from 'components/User/actions'
-import watchUserAuth from 'components/User/sagas'
-import userAuthReducer from 'components/User/reducers'
-import { makeSelectSuccessfulAuth } from 'components/User/selectors'
+import { signInUser } from 'containers/User/actions'
+import watchUserAuth from 'containers/User/sagas'
+import userAuthReducer from 'containers/User/reducers'
+import { makeSelectSuccessfulAuth } from 'containers/User/selectors'
 import RedirectRoute from './RedirectRoute'
 
 import theme from './theme'
@@ -47,7 +47,7 @@ export class App extends React.PureComponent {
     }
   }
 
-  componentWillMount() {
+  componentDidMount() {
     Firebase.authUser()
       .then(user => {
         this.props.onSignInUser(user)
