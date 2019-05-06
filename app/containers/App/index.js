@@ -41,10 +41,21 @@ const jss = create({
 
 
 export class App extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      isAuthenticating: true,
+    }
+  }
+
   componentDidMount() {
     Firebase.authUser()
       .then(user => {
         this.props.onSignInUser(user)
+        this.setState({ isAuthenticating: false })
+      })
+      .catch(() => {
+        this.setState({ isAuthenticating: false })
       })
   }
 
@@ -54,9 +65,10 @@ export class App extends React.PureComponent {
   }
 
   render() {
+    const { isAuthenticating } = this.state
     const { authStatus } = this.props
 
-    if(authStatus.get('authLoading')) return null
+    if(isAuthenticating || authStatus.get('authLoading')) return null
 
     return (
       <JssProvider jss={jss} generateClassName={generateClassName}>
