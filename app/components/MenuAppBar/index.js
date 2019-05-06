@@ -8,7 +8,7 @@ import injectReducer from 'utils/injectReducer'
 import { createStructuredSelector } from 'reselect'
 
 import Firebase from 'containers/Firebase'
-import { makeSelectAuthResponse, makeSelectSuccessfulAuth } from 'containers/User/selectors'
+import { makeSelectAuthResponse, makeSelectAuthStatus } from 'containers/User/selectors'
 import { signOutUser } from 'containers/User/actions'
 import userSaga from 'containers/User/sagas'
 import userReducer from 'containers/User/reducers'
@@ -47,7 +47,7 @@ export class MenuAppBar extends React.PureComponent {
   }
 
   render() {
-    const { classes, isAuthed } = this.props
+    const { classes, authStatus } = this.props
     const { allowNotifications } = this.state
 
     const loggedInList = (
@@ -146,7 +146,7 @@ export class MenuAppBar extends React.PureComponent {
             tabIndex={0}
             role='button'
             onKeyDown={() => this.toggleDrawer(false)} >
-            {isAuthed ? loggedInList : loggedOutList}
+            {authStatus.get('isAuthed') ? loggedInList : loggedOutList}
           </div>
         </StyledSwipeableDrawer>
       </div>
@@ -158,21 +158,20 @@ MenuAppBar.propTypes = {
   classes: PropTypes.object.isRequired,
 }
 
-
 MenuAppBar.propTypes = {
-  isAuthed: PropTypes.bool,
+  authStatus: PropTypes.instanceOf(Map),
   user: PropTypes.instanceOf(Map),
   onSignOutUser: PropTypes.func.isRequired,
 }
 
 MenuAppBar.defaultProps = {
   user: Map(),
-  isAuthed: false,
+  authStatus: Map(),
 }
 
 const mapStateToProps = createStructuredSelector({
   user: makeSelectAuthResponse(),
-  isAuthed: makeSelectSuccessfulAuth(),
+  authStatus: makeSelectAuthStatus(),
 })
 
 export function mapDispatchToProps(dispatch) {
