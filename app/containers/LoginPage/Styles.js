@@ -1,10 +1,11 @@
 import styled from 'styled-components'
 
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth'
+
 
 export const Wrapper = styled.div`
 `
 
-export const Text = styled.h1`
-  margin-top: 0;
-  margin-bottom: 1.5em;
+export const StyledAuthButtons = styled(StyledFirebaseAuth)`
+  margin-top: 2em;
 `

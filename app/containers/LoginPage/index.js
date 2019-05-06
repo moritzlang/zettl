@@ -1,14 +1,19 @@
 import React from 'react'
 
-import { Wrapper, Text } from './Styles'
+import Firebase from 'components/Firebase'
 
+import { Headline, Introduction } from 'styles/typography'
+import { Wrapper, StyledAuthButtons } from './Styles'
 
 export class LoginPage extends React.PureComponent {
-
   render() {
     return (
       <Wrapper>
-        <Text>Login Page</Text>
+        <Headline>Login Page</Headline>
+        <Introduction>Please sign in to use this app.</Introduction>
+        <StyledAuthButtons
+          uiConfig={Firebase.uiConfig}
+          firebaseAuth={Firebase.auth()} />
       </Wrapper>
     )
   }
