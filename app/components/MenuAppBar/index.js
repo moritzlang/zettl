@@ -13,6 +13,8 @@ import { signOutUser } from 'containers/User/actions'
 import userSaga from 'containers/User/sagas'
 import userReducer from 'containers/User/reducers'
 
+import toUint8Array from 'urlb64touint8array'
+
 import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import IconButton from '@material-ui/core/IconButton'
@@ -31,6 +33,9 @@ import defaultImage from 'images/icon-user-circle.svg'
 
 import { styles, StyledSwipeableDrawer, StyledAppBar, StyledListItem, StyledListItemText, StyledInfoListItemText } from './Styles'
 
+const applicationServerPublicKey = 'BJTrL5xVK7gaOnuFQyu2ZqA3P0QUxX8FlUKSeu1vpYei1qiXfNBzZyNk_MGoVPWASRwR_3HZfgVhTRKIR-GBeu4'
+
+
 export class MenuAppBar extends React.PureComponent {
   constructor(props) {
     super(props)
@@ -38,7 +43,9 @@ export class MenuAppBar extends React.PureComponent {
       drawerOpen: false,
       showNotificationSwitch: false,
       allowNotifications: false,
+      notificationsBlocked: Notification.permission === 'denied',
       deferredPrompt: null,
+      swRegistration: null,
     }
   }
 
@@ -69,8 +76,36 @@ export class MenuAppBar extends React.PureComponent {
     }
   }
 
+  initNotificationSwitch = () => {
+    this.state.swRegistration.pushManager.getSubscription()
+      .then((subscription) => {
+        if(!(subscription === null)) {
+          // User is subscribed to notifications
+          this.setState({ allowNotifications: true })
+        } else {
+          this.setState({ allowNotifications: false })
+        }
+      })
+  }
+
   componentDidMount() {
     window.addEventListener('beforeinstallprompt', this.deferPrompt)
+  
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      // Service Worker and Push is supported
+      this.setState({ showNotificationSwitch: true })
+      navigator.serviceWorker.register('sw.js')
+        .then((swReg) => {
+          this.setState({ swRegistration: swReg })
+          this.initNotificationSwitch()
+        })
+        .catch((err) => {
+          console.error('Service Worker Error', err)
+        })
+    } else {
+      // Push messaging is not supported
+      this.setState({ showNotificationSwitch: false })
+    }
   }
 
   componentWillUnmount() {
@@ -82,12 +117,54 @@ export class MenuAppBar extends React.PureComponent {
   }
 
   subscribeUser = () => {
+    const applicationServerKey = toUint8Array(applicationServerPublicKey)
+    this.state.swRegistration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey,
+    })
+      .then(subscription => {
+        // User is subscribed
+    
+        // TODO:
+        this.updateSubscriptionOnServer(subscription)
+    
+        this.setState({ allowNotifications: true })
+      })
+      .catch(() => {
+        // Failed to subscribe the user
+        this.setState({ allowNotifications: false })
+      })
+  }
 
+  unsubscribeUser = () => {
+    this.state.swRegistration.pushManager.getSubscription()
+      .then(subscription => {
+        if (subscription) {
+          return subscription.unsubscribe()
+        }
+        return null
+      })
+      .catch(err => {
+        console.log('Error unsubscribing', err)
+      })
+      .then(() => {
+        // User is unsubscribed
+        this.updateSubscriptionOnServer(null)
+        this.setState({ allowNotifications: false })
+      })
+  }
+
+  updateSubscriptionOnServer = (subscription) => {
+    // TODO: Send subscription to application server
+    if(subscription) {
+      console.log(subscription)
+      console.log(JSON.stringify(subscription))
+    }
   }
 
   toggleNotifications = () => {
-    if (this.state.allowNotifications) {
-      // TODO: Unsubscribe user
+    if(this.state.allowNotifications) {
+      this.unsubscribeUser()
     } else {
       this.subscribeUser()
     }
@@ -95,7 +172,12 @@ export class MenuAppBar extends React.PureComponent {
 
   render() {
     const { classes, authStatus } = this.props
-    const { allowNotifications, deferredPrompt, showNotificationSwitch } = this.state
+    const {
+      allowNotifications,
+      deferredPrompt,
+      showNotificationSwitch,
+      notificationsBlocked,
+    } = this.state
 
     const loggedInList = (
       <List className={classes.root}>
@@ -126,6 +208,7 @@ export class MenuAppBar extends React.PureComponent {
                 onClick={() => this.toggleNotifications()}
                 checked={allowNotifications}
                 disableRipple
+                disabled={notificationsBlocked}
                 classes={{
                   switchBase: classes.switchBase,
                   bar: classes.switchBar,
