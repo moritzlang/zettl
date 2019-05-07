@@ -35,7 +35,7 @@ export default {
     }),
   signOut: () => firebase.auth().signOut(),
   uiConfig: {
-    signInSuccessUrl: 'http://localhost:3000/',
+    signInSuccessUrl: process.env.NODE_ENV === 'development' ? 'http://localhost:3000/' : 'https://zettl-835a3.firebaseapp.com/',
     signInOptions: [
       firebase.auth.GoogleAuthProvider.PROVIDER_ID,
       firebase.auth.FacebookAuthProvider.PROVIDER_ID,
