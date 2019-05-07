@@ -90,7 +90,18 @@ export class MenuAppBar extends React.PureComponent {
 
   componentDidMount() {
     window.addEventListener('beforeinstallprompt', this.deferPrompt)
-  
+    this.initPushNotifications()
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('beforeinstallprompt', this.deferPrompt)
+  }
+
+  toggleDrawer = (open) => {
+    this.setState({ drawerOpen: open })
+  }
+
+  initPushNotifications = () => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       // Service Worker and Push is supported
       this.setState({ showNotificationSwitch: true })
@@ -106,14 +117,6 @@ export class MenuAppBar extends React.PureComponent {
       // Push messaging is not supported
       this.setState({ showNotificationSwitch: false })
     }
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('beforeinstallprompt', this.deferPrompt)
-  }
-
-  toggleDrawer = (open) => {
-    this.setState({ drawerOpen: open })
   }
 
   subscribeUser = () => {
