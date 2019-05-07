@@ -98,6 +98,7 @@
     "reselect": "4.0.0",
     "sanitize.css": "8.0.0",
     "styled-components": "4.2.0",
+    "urlb64touint8array": "^1.0.3",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
