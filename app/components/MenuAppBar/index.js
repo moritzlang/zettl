@@ -34,21 +34,66 @@ export class MenuAppBar extends React.PureComponent {
     super(props)
     this.state = {
       drawerOpen: false,
+      showNotificationSwitch: false,
       allowNotifications: false,
+      deferredPrompt: null,
     }
+  }
+
+  // Cancel add-to-homescreen prompt
+  deferPrompt = e => {
+    console.log('beforeinstallprompt Event fired')
+    e.preventDefault()
+    this.setState({ deferredPrompt: e })
+  }
+
+  installApp = () => {
+    const { deferredPrompt } = this.state
+    if(deferredPrompt !== null) {
+      // Show the prompt
+      deferredPrompt.prompt()
+
+      // Follow what the user has done with the prompt.
+      deferredPrompt.userChoice.then(choiceResult => {
+        if(choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt')
+        } else {
+          console.log('User dismissed the A2HS prompt')
+        }
+
+        // Remove prompt
+        this.setState({ deferredPrompt: null })
+      })
+    }
+  }
+
+  componentDidMount() {
+    window.addEventListener('beforeinstallprompt', this.deferPrompt)
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('beforeinstallprompt', this.deferPrompt)
   }
 
   toggleDrawer = (open) => {
     this.setState({ drawerOpen: open })
   }
 
+  subscribeUser = () => {
+
+  }
+
   toggleNotifications = () => {
-    this.setState((prevState) => ({ allowNotifications: !prevState.allowNotifications }))
+    if (this.state.allowNotifications) {
+      // TODO: Unsubscribe user
+    } else {
+      this.subscribeUser()
+    }
   }
 
   render() {
     const { classes, authStatus } = this.props
-    const { allowNotifications } = this.state
+    const { allowNotifications, deferredPrompt, showNotificationSwitch } = this.state
 
     const loggedInList = (
       <List className={classes.root}>
@@ -65,34 +110,41 @@ export class MenuAppBar extends React.PureComponent {
 
         <Divider />
 
-        <StyledListItem
-          button
-          onClick={() => this.toggleNotifications()} >
-          <ListItemIcon>
-            <NotificationIcon />
-          </ListItemIcon>
-          <ListItemText primary='Notifications' />
-          <ListItemSecondaryAction>
-            <Switch
-              onClick={() => this.toggleNotifications()}
-              checked={allowNotifications}
-              disableRipple
-              classes={{
-                switchBase: classes.switchBase,
-                bar: classes.switchBar,
-                icon: classes.switchIcon,
-                iconChecked: classes.switchIconChecked,
-                checked: classes.switchChecked,
-              }} />
-          </ListItemSecondaryAction>
-        </StyledListItem>
+        {showNotificationSwitch ? (
+          <StyledListItem
+            button
+            onClick={() => this.toggleNotifications()} >
+            <ListItemIcon>
+              <NotificationIcon />
+            </ListItemIcon>
+            <ListItemText primary='Notifications' />
+            <ListItemSecondaryAction>
+              <Switch
+                onClick={() => this.toggleNotifications()}
+                checked={allowNotifications}
+                disableRipple
+                classes={{
+                  switchBase: classes.switchBase,
+                  bar: classes.switchBar,
+                  icon: classes.switchIcon,
+                  iconChecked: classes.switchIconChecked,
+                  checked: classes.switchChecked,
+                }} />
+            </ListItemSecondaryAction>
+          </StyledListItem>
+        ) : null}
 
-        <StyledListItem button>
-          <ListItemIcon>
-            <InstallIcon />
-          </ListItemIcon>
-          <ListItemText primary='Install' />
-        </StyledListItem>
+        {deferredPrompt ? (
+          <StyledListItem
+            button
+            onClick={() => this.installApp()} >
+            <ListItemIcon>
+              <InstallIcon />
+            </ListItemIcon>
+            <ListItemText primary='Install' />
+          </StyledListItem>
+        ) : null}
+
 
         <StyledListItem
           button
