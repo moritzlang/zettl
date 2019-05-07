@@ -124,10 +124,7 @@ export class MenuAppBar extends React.PureComponent {
     })
       .then(subscription => {
         // User is subscribed
-    
-        // TODO:
         this.updateSubscriptionOnServer(subscription)
-    
         this.setState({ allowNotifications: true })
       })
       .catch(() => {
@@ -154,8 +151,8 @@ export class MenuAppBar extends React.PureComponent {
       })
   }
 
+  // TODO: Send subscription to application server
   updateSubscriptionOnServer = (subscription) => {
-    // TODO: Send subscription to application server
     if(subscription) {
       console.log(subscription)
       console.log(JSON.stringify(subscription))
