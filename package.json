@@ -1,16 +1,16 @@
 {
-  "name": "react-boilerplate",
-  "version": "4.0.0",
-  "description": "A highly scalable, offline-first foundation with the best DX and a focus on performance and best practices",
+  "name": "zettl",
+  "version": "1.0.0",
+  "description": "A fully offline shopping list app. Like a real piece of paper but on your phone.",
   "repository": {
     "type": "git",
-    "url": "git://github.com/react-boilerplate/react-boilerplate.git"
+    "url": "https://github.com/moritzlang/zettl.git"
   },
   "engines": {
     "npm": ">=5",
     "node": ">=8.15.1"
   },
-  "author": "Max Stoiber",
+  "author": "Moritz Lang",
   "license": "MIT",
   "scripts": {
     "analyze:clean": "rimraf stats.json",
