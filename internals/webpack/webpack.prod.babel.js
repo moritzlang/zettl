@@ -7,6 +7,8 @@ const { HashedModuleIdsPlugin } = require('webpack')
 const TerserPlugin = require('terser-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 
+const { manifest, offlinePlugin } = require('../config/pwa-config')
+
 module.exports = require('./webpack.base.babel')({
   mode: 'production',
 
@@ -86,27 +88,7 @@ module.exports = require('./webpack.base.babel')({
 
     // Put it in the end to capture all the HtmlWebpackPlugin's
     // assets manipulations and do leak its manipulations to HtmlWebpackPlugin
-    new OfflinePlugin({
-      relativePaths: false,
-      publicPath: '/',
-      appShell: '/',
-
-      // No need to cache .htaccess. See http://mxs.is/googmp,
-      // this is applied before any match in `caches` section
-      excludes: ['.htaccess'],
-
-      caches: {
-        main: [':rest:'],
-
-        // All chunks marked as `additional`, loaded after main section
-        // and do not prevent SW to install. Change to `optional` if
-        // do not want them to be preloaded at all (cached only when first loaded)
-        additional: ['*.chunk.js'],
-      },
-
-      // Removes warning for about `additional` section usage
-      safeToUseOptionalCaches: true,
-    }),
+    new OfflinePlugin(offlinePlugin),
 
     new CompressionPlugin({
       algorithm: 'gzip',
@@ -115,26 +97,7 @@ module.exports = require('./webpack.base.babel')({
       minRatio: 0.8,
     }),
 
-    new WebpackPwaManifest({
-      name: 'zettl',
-      short_name: 'zettl',
-      description: 'A fully offline shopping list app. Like a real piece of paper but on your phone.',
-      background_color: '#F9F7F3',
-      theme_color: '#F9F7F3',
-      inject: true,
-      ios: true,
-      icons: [
-        {
-          src: path.resolve('app/images/icon-512x512.png'),
-          sizes: [72, 96, 128, 144, 192, 384, 512],
-        },
-        {
-          src: path.resolve('app/images/icon-512x512.png'),
-          sizes: [120, 152, 167, 180],
-          ios: true,
-        },
-      ],
-    }),
+    new WebpackPwaManifest(manifest),
 
     new HashedModuleIdsPlugin({
       hashFunction: 'sha256',
