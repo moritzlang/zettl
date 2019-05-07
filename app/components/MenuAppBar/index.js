@@ -27,6 +27,8 @@ import Divider from '@material-ui/core/Divider'
 import ListItemAvatar from '@material-ui/core/ListItemAvatar'
 import Avatar from '@material-ui/core/Avatar'
 
+import defaultImage from 'images/icon-user-circle.svg'
+
 import { styles, StyledSwipeableDrawer, StyledAppBar, StyledListItem, StyledListItemText, StyledInfoListItemText } from './Styles'
 
 export class MenuAppBar extends React.PureComponent {
@@ -101,6 +103,7 @@ export class MenuAppBar extends React.PureComponent {
           <ListItemAvatar>
             <Avatar
               alt='Avatar'
+              onError={(e) => { e.target.src = defaultImage }}
               src={this.props.user.getIn(['details', 'photoURL'])} />
           </ListItemAvatar>
           <StyledListItemText
