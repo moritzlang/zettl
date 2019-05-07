@@ -10,7 +10,7 @@ import { StyledList } from './Styles'
 
 export class Articles extends React.PureComponent {
 
-  handleToggle = (id, value) => {
+  handleCheckToggle = (id, value) => {
     this.props.onToggle(id, value)
   }
 
@@ -27,7 +27,8 @@ export class Articles extends React.PureComponent {
               key={a.get('id')}
               id={a.get('id')}
               value={a.get('value')}
-              checked={a.get('checked')}/>
+              checked={a.get('checked')}
+              onToggle={this.handleCheckToggle} />
           )).reverse()
             // TODO: style empty state
             : (
