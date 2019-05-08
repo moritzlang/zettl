@@ -8,6 +8,7 @@ export const Wrapper = styled.div`
   text-align: left;
   margin-bottom: 1em;
   width: 100%;
+  max-width: 360px;
 
   &:after {
     content: '';
