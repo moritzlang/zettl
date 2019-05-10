@@ -7,6 +7,7 @@ module.exports = {
     description: 'A fully offline shopping list app. Like a real piece of paper but on your phone.',
     background_color: '#F9F7F3',
     theme_color: '#F9F7F3',
+    gcm_sender_id: '103953800507',
     inject: true,
     ios: true,
     icons: [
