@@ -1,4 +1,5 @@
 import React from 'react'
+import { List } from 'immutable'
 import PropTypes from 'prop-types'
 import ImmutablePropTypes from 'react-immutable-proptypes'
 
@@ -55,6 +56,7 @@ Articles.propTypes = {
 }
 
 Articles.defaultProps = {
+  articles: List(),
 }
 
 export default Articles
