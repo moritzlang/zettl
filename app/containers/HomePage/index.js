@@ -12,29 +12,47 @@ import { createStructuredSelector } from 'reselect'
 import MainInput from 'components/MainInput'
 import Articles from 'components/Articles'
 
-import { makeSelectArticles } from 'containers/Article/selectors'
-import { loadArticles, toggleArticle, addArticle } from 'containers/Article/actions'
-import articleSaga from 'containers/Article/sagas'
-import articleReducer from 'containers/Article/reducers'
+import { toggleArticle, addArticle } from 'containers/Article/actions'
+import { loadLists } from 'containers/List/actions'
+import { makeSelectLists } from 'containers/List/selectors'
+import listSaga from 'containers/List/sagas'
+import listReducer from 'containers/List/reducers'
 
 import { Wrapper } from './Styles'
 
 export class HomePage extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      currentList: 'dHvgmOh41LmRH1gmGlVY',
+    }
+  }
 
   componentDidMount() {
-    this.props.onLoadArticles()
+    this.props.onLoadLists()
   }
 
   handleSubmit = (value) => {
-    this.props.onAddArticle(value)
+    this.props.onAddArticle({
+      listId: this.state.currentList,
+      value,
+    })
   }
 
   handleCheckToggle = (id, value) => {
-    this.props.onToggleArticle({ id, value })
+    this.props.onToggleArticle({
+      listId: this.state.currentList,
+      articleId: id,
+      value,
+    })
   }
 
   render() {
-    const { articles } = this.props
+    // const { currentList } = this.state
+    const { lists } = this.props
+
+    const list = lists && lists.size ? lists.get('lists').last() : List()
+    const articles = list && list.size ? list.get('articles') : List()
 
     return (
       <Wrapper>
@@ -44,8 +62,8 @@ export class HomePage extends React.PureComponent {
           autoComplete='off'
           onSubmit={this.handleSubmit}
         />
-        {!articles.get('articlesLoading')
-          ? <Articles onToggle={this.handleCheckToggle} articles={articles.get('articles')} />
+        {!lists.get('listsLoading')
+          ? <Articles onToggle={this.handleCheckToggle} articles={articles} />
           : null}
       </Wrapper>
     )
@@ -53,38 +71,43 @@ export class HomePage extends React.PureComponent {
 }
 
 HomePage.propTypes = {
-  onLoadArticles: PropTypes.func.isRequired,
+  onLoadLists: PropTypes.func.isRequired,
   onToggleArticle: PropTypes.func.isRequired,
   onAddArticle: PropTypes.func.isRequired,
-  articles: ImmutablePropTypes.mapContains({
-    articles: ImmutablePropTypes.listOf(
+  lists: ImmutablePropTypes.mapContains({
+    lists: ImmutablePropTypes.orderedMapOf(
       ImmutablePropTypes.mapContains({
-        id: PropTypes.string,
-        value: PropTypes.string,
-        checked: PropTypes.bool,
-      })
+        title: PropTypes.string,
+        articles: ImmutablePropTypes.listOf(
+          ImmutablePropTypes.mapContains({
+            id: PropTypes.string,
+            value: PropTypes.string,
+            checked: PropTypes.bool,
+          })
+        ),
+      }),
     ),
   }),
 }
 
 HomePage.defaultProps = {
-  articles: List(),
+  lists: Map,
 }
 
 const mapStateToProps = createStructuredSelector({
-  articles: makeSelectArticles(),
+  lists: makeSelectLists(),
 })
 
 export function mapDispatchToProps(dispatch) {
   return {
-    onLoadArticles: () => dispatch(loadArticles()),
+    onLoadLists: () => dispatch(loadLists()),
     onToggleArticle: data => dispatch(toggleArticle(data)),
     onAddArticle: data => dispatch(addArticle(data)),
   }
 }
 
-const withReducer = injectReducer({key: 'articles', reducer: articleReducer})
-const withSaga = injectSaga({key: 'articles', saga: articleSaga})
+const withReducer = injectReducer({key: 'lists', reducer: listReducer})
+const withSaga = injectSaga({key: 'lists', saga: listSaga})
 
 const withConnect = connect(
   mapStateToProps,

@@ -1,0 +1,6 @@
+export const LOAD_LISTS = 'zettl/List/LOAD_LISTS'
+export const LOAD_LISTS_SUCCESS = 'zettl/List/LOAD_LISTS_SUCCESS'
+export const LOAD_LISTS_ERROR = 'zettl/List/LOAD_LISTS_ERROR'
+export const ADD_LIST = 'zettl/List/ADD_LIST'
+export const ADD_LIST_SUCCESS = 'zettl/List/ADD_LIST_SUCCESS'
+export const ADD_LIST_ERROR = 'zettl/List/ADD_LIST_ERROR'

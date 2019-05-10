@@ -1,8 +1,9 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
+// import 'firebase/messaging'
 
-import { fromJS, List } from 'immutable'
+import { fromJS, List, Map, OrderedMap } from 'immutable'
 
 const config = {
   apiKey: 'AIzaSyAEky8TexWlTfJYkcUCmSMfcqdxoFeZOXA',
@@ -14,13 +15,29 @@ const config = {
   appId: '1:211177511834:web:d2a0112906690b2f',
 }
 
+// Initialize firebase
 if(!firebase.apps.length) {
   firebase.initializeApp(config)
+  // firebase.messaging()
+  //   .usePublicVapidKey('BMmSJaZxoMRvgUp_Bf8zhn3Z3DBBvK6MsjvbcNh8gcVxqWX8-8MjB5YvZpBL_AfgRd7AaXsWmCJjOvlH87OCE_o')
+
+// // Register service worker
+// if ('serviceWorker' in navigator && 'PushManager' in window) {
+//   // Service Worker and Push is supported
+//   navigator.serviceWorker.register('sw.js')
+//     .then(registration => {
+//       firebase.messaging().useServiceWorker(registration)
+//     })
+//     .catch((err) => {
+//       console.error('Service Worker Error', err)
+//     })
+// }
 }
 
 export default {
   auth: () => firebase.auth(),
   db: firebase.firestore(),
+  // messaging: firebase.messaging(),
   authUser: () =>
     new Promise((resolve, reject) => {
       firebase.auth().onAuthStateChanged(user => {
@@ -48,15 +65,41 @@ export default {
       window.location.assign('/privacy-policy')
     },
   },
-  articles: new Promise((resolve) => (
-    firebase.firestore().collection('articles').orderBy('updated_at', 'asc').get()
-      .then(collection =>
-        collection.docs.reduce((checked, doc) => {
-          checked.push(fromJS({ id: doc.id, ...doc.data() }))
-          return checked
+  getLists() {
+    const { uid } = firebase.auth().currentUser
+
+    return firebase.firestore().collection('user_list').where('userId', '==', uid).get()
+      .then(async collection => 
+        collection.docs.reduce(async (lists, doc) => {
+          const { listId } = doc.data()
+          const list = await Promise.all([this.getListDetails(listId), this.getArticles(listId)])
+            .then(([listDetails, articles]) => (
+              Map({
+                ...listDetails,
+                articles,
+              })
+            ))
+
+          if(list) {
+            (await lists).push([listId, list])
+          }
+          return lists
         }, []))
-      .then((articles) => resolve(List(articles)))
-  )),
+      .then(lists => OrderedMap(lists))
+  },
+  getListDetails(listId) {
+    return firebase.firestore().collection('lists').doc(listId).get()
+      .then(l => l.data())
+  },
+  getArticles(listId) {
+    return firebase.firestore().collection('articles').where('listId', '==', listId).orderBy('updated_at', 'asc').get()
+      .then(collection =>
+        collection.docs.reduce((articles, doc) => {
+          articles.push(fromJS({ id: doc.id, ...doc.data() }))
+          return articles
+        }, []))
+      .then((articles) => List(articles))
+  },
   addArticle: article => (
     firebase.firestore().collection('articles').doc(article.id).set(article)
   ),
@@ -66,4 +109,13 @@ export default {
         .then(res => resolve(res))
     })
   ),
+  // addToken: (userId, token) => {
+  //   return firebase.firestore().collection('users').doc(userId).set({ token })
+  // },
+  // deleteToken: () => (
+  //   new Promise((resolve) => {
+  //     firebase.firestore().collection('users').doc(firebase.auth().currentUser).update({ token: firebase.firestore.FieldValue.delete() })
+  //       .then(res => resolve(res))
+  //   })
+  // ),
 }
