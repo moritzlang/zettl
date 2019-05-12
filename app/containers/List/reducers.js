@@ -1,4 +1,4 @@
-import { fromJS, OrderedMap } from 'immutable'
+import { fromJS, OrderedMap, List, Map } from 'immutable'
 
 import {
   ADD_ARTICLE,
@@ -53,7 +53,10 @@ function listReducer(state = initialState, action) {
     case ADD_LIST_SUCCESS:
       return state
         .set('addListLoading', false)
-        .update('lists', lists => lists.push(fromJS(response)))
+        .update('lists', lists => lists.set(response.id, Map({
+          ...response,
+          articles: List(),
+        })))
     case ADD_LIST_ERROR:
       return state
         .set('addListLoading', false)
