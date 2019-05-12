@@ -59,7 +59,7 @@ export const LogoutIcon = props => {
 }
 
 export const CheckboxCheckedIcon = props => {
-  const colorPrimary = props.colors && props.colors.primary ? props.colors.primary : Color.BLUE_PRIMARY
+  const colorPrimary = props.colors && props.colors.primary ? props.colors.primary : Color.TEAL_PRIMARY
   return(
     <SvgIcon {...props}>
       <defs>
@@ -115,6 +115,18 @@ export const GroupIcon = props => {
     <SvgIcon {...props}>
       <path fill={colorPrimary} d="M12 13a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v3a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1 1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3zM7 9a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm10 0a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
       <path fill={colorSecondary} d="M12 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm-3 1h6a3 3 0 0 1 3 3v3a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-3a3 3 0 0 1 3-3z"/>
+    </SvgIcon>
+  )
+}
+
+export const LinkIcon = props => {
+  const colorPrimary = props.colors && props.colors.primary ? props.colors.primary : Color.ICON_PRIMARY
+  const colorSecondary = props.colors && props.colors.secondary ? props.colors.secondary : Color.ICON_SECONDARY
+  
+  return (
+    <SvgIcon {...props}>
+      <path fill={colorSecondary} d="M19.48 13.03l-.02-.03a1 1 0 1 1 1.75-.98A6 6 0 0 1 16 21h-4a6 6 0 1 1 0-12h1a1 1 0 0 1 0 2h-1a4 4 0 1 0 0 8h4a4 4 0 0 0 3.48-5.97z"/>
+      <path fill={colorPrimary} d="M4.52 10.97l.02.03a1 1 0 1 1-1.75.98A6 6 0 0 1 8 3h4a6 6 0 1 1 0 12h-1a1 1 0 0 1 0-2h1a4 4 0 1 0 0-8H8a4 4 0 0 0-3.48 5.97z"/>
     </SvgIcon>
   )
 }
