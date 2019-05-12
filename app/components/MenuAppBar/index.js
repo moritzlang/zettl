@@ -8,6 +8,8 @@ import injectSaga from 'utils/injectSaga'
 import injectReducer from 'utils/injectReducer'
 import { createStructuredSelector } from 'reselect'
 
+import { Link } from 'react-router-dom'
+
 import Firebase from 'containers/Firebase'
 
 import { makeSelectUser, makeSelectAuthStatus } from 'containers/User/selectors'
@@ -327,7 +329,9 @@ export class MenuAppBar extends React.PureComponent {
         <StyledAppBar>
           <Toolbar>
             <div className={classes.logo}>
-              <ZettlIcon />
+              <Link to='/'>
+                <ZettlIcon />
+              </Link>
             </div>
 
             {authStatus.get('isAuthed') && (window.location.pathname === '/') ? 
