@@ -29,14 +29,14 @@ export class HomePage extends React.PureComponent {
 
   handleSubmit = (value) => {
     this.props.onAddArticle({
-      listId: this.state.currentList,
+      listId: this.props.user.get('currentList'),
       value,
     })
   }
 
   handleCheckToggle = (id, value) => {
     this.props.onToggleArticle({
-      listId: this.state.currentList,
+      listId: this.props.user.get('currentList'),
       articleId: id,
       value,
     })
