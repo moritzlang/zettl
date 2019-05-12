@@ -107,7 +107,7 @@ export const styles = theme => ({
     '&$switchChecked': {
       color: theme.palette.common.white,
       '& + $switchBar': {
-        backgroundColor: Color.GREEN_300,
+        backgroundColor: Color.TEAL_PRIMARY,
       },
     },
     transition: theme.transitions.create('transform', {

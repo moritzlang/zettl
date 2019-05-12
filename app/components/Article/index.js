@@ -26,7 +26,7 @@ export class Articles extends React.PureComponent {
             checked={checked}
             tabIndex={-1}
             icon={<CheckboxIcon />}
-            checkedIcon={<CheckboxCheckedIcon colors={{ primary: Color.GREEN_300 }} />}
+            checkedIcon={<CheckboxCheckedIcon colors={{ primary: Color.TEAL_500 }} />}
             disableRipple />
           <StyledListItemText primary={value} />
           <ListItemSecondaryAction>
