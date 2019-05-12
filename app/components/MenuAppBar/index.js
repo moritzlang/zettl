@@ -11,6 +11,7 @@ import { createStructuredSelector } from 'reselect'
 import { Link } from 'react-router-dom'
 
 import Firebase from 'containers/Firebase'
+import { url } from 'utils/config'
 
 import { makeSelectUser, makeSelectAuthStatus } from 'containers/User/selectors'
 import { signOutUser, saveCurrentList } from 'containers/User/actions'
@@ -27,7 +28,15 @@ import uuid from 'uuid/v4'
 import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import IconButton from '@material-ui/core/IconButton'
-import { ZettlIcon, MenuIcon, InstallIcon, NotificationIcon, LogoutIcon, GroupIcon } from 'images/icons'
+import {
+  ZettlIcon,
+  MenuIcon,
+  InstallIcon,
+  NotificationIcon,
+  LogoutIcon,
+  GroupIcon,
+  LinkIcon,
+} from 'images/icons'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
@@ -205,7 +214,20 @@ export class MenuAppBar extends React.PureComponent {
     this.props.onAddList({ userId, list })
     // Set newly created list to current list
     this.props.onSaveCurrentList({ userId, value: list.id })
-  };
+  }
+
+  share = (key) => {
+    const firstName = this.props.user.getIn(['details', 'displayName']).split(' ')[0]
+    if(navigator.share) {
+      navigator.share({
+        title: 'zettl',
+        text: `${firstName} wants to share a list with you`,
+        url: `${url}/join/${key}`,
+      })
+        .then(() => console.log('Successful share'))
+        .catch((error) => console.log('Error sharing', error))
+    }
+  }
 
   render() {
     const {
@@ -221,9 +243,10 @@ export class MenuAppBar extends React.PureComponent {
       showNotificationSwitch,
       notificationsBlocked,
     } = this.state
-    
+
     const currentList = listsOverview.find(list => list.value === user.get('currentList'))
     const lastList = listsOverview.length ? listsOverview[listsOverview.length - 1] : null
+    const actualList = currentList || lastList
 
     const loggedInList = (
       <List className={classes.root}>
@@ -241,42 +264,49 @@ export class MenuAppBar extends React.PureComponent {
 
         <Divider />
 
-        {showNotificationSwitch ? (
-          <StyledListItem
-            button
-            onClick={() => this.toggleNotifications()} >
-            <ListItemIcon>
-              <NotificationIcon />
-            </ListItemIcon>
-            <ListItemText primary='Notifications' />
-            <ListItemSecondaryAction>
-              <Switch
-                onClick={() => this.toggleNotifications()}
-                checked={allowNotifications}
-                disableRipple
-                disabled={notificationsBlocked}
-                classes={{
-                  switchBase: classes.switchBase,
-                  bar: classes.switchBar,
-                  icon: classes.switchIcon,
-                  iconChecked: classes.switchIconChecked,
-                  checked: classes.switchChecked,
-                }} />
-            </ListItemSecondaryAction>
-          </StyledListItem>
-        ) : null}
+        {showNotificationSwitch &&
+        <StyledListItem
+          button
+          onClick={() => this.toggleNotifications()} >
+          <ListItemIcon>
+            <NotificationIcon />
+          </ListItemIcon>
+          <ListItemText primary='Notifications' />
+          <ListItemSecondaryAction>
+            <Switch
+              onClick={() => this.toggleNotifications()}
+              checked={allowNotifications}
+              disableRipple
+              disabled={notificationsBlocked}
+              classes={{
+                switchBase: classes.switchBase,
+                bar: classes.switchBar,
+                icon: classes.switchIcon,
+                iconChecked: classes.switchIconChecked,
+                checked: classes.switchChecked,
+              }} />
+          </ListItemSecondaryAction>
+        </StyledListItem>}
 
-        {deferredPrompt ? (
-          <StyledListItem
-            button
-            onClick={() => this.installApp()} >
-            <ListItemIcon>
-              <InstallIcon />
-            </ListItemIcon>
-            <ListItemText primary='Install' />
-          </StyledListItem>
-        ) : null}
+        {(actualList && navigator.share) &&
+        <StyledListItem
+          button
+          onClick={() => this.share(actualList.value)} >
+          <ListItemIcon>
+            <LinkIcon />
+          </ListItemIcon>
+          <ListItemText primary='Share this list' />
+        </StyledListItem>}
 
+        {deferredPrompt &&
+        <StyledListItem
+          button
+          onClick={() => this.installApp()} >
+          <ListItemIcon>
+            <InstallIcon />
+          </ListItemIcon>
+          <ListItemText primary='Install' />
+        </StyledListItem>}
 
         <StyledListItem
           button
@@ -340,8 +370,8 @@ export class MenuAppBar extends React.PureComponent {
                   onChange={this.handleListChange}
                   onCreateOption={this.handleListCreate}
                   options={listsOverview}
-                  value={currentList || lastList}
-                  defaultValue={currentList || lastList}
+                  value={actualList}
+                  defaultValue={actualList}
                   placeholder="Tap for new list"
                   components={{
                     SingleValue,
