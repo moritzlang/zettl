@@ -4,6 +4,7 @@ import 'firebase/firestore'
 import 'firebase/messaging'
 
 import { fromJS, List, Map, OrderedMap } from 'immutable'
+import { url } from 'utils/config'
 
 const config = {
   apiKey: 'AIzaSyAEky8TexWlTfJYkcUCmSMfcqdxoFeZOXA',
@@ -52,7 +53,7 @@ export default {
     }),
   signOut: () => firebase.auth().signOut(),
   uiConfig: {
-    signInSuccessUrl: process.env.NODE_ENV === 'development' ? 'http://localhost:3000/' : 'https://zettl-835a3.firebaseapp.com/',
+    signInSuccessUrl: url,
     signInOptions: [
       firebase.auth.GoogleAuthProvider.PROVIDER_ID,
       firebase.auth.FacebookAuthProvider.PROVIDER_ID,
@@ -124,6 +125,52 @@ export default {
   updateUser: (id, data) => (
     firebase.firestore().collection('users').doc(id).update(data)
   ),
+  joinList(userId, key) {
+    return new Promise(async (resolve, reject) => {
+      // Check if passed id is valid
+      // in this case if the list exists
+      // TODO: This should be done via own join_links collection
+      // or something like that
+      const list = await firebase.firestore().collection('lists').doc(key).get()
+        .then(doc => {
+          if (!doc.exists) {
+            return null
+          }
+          return doc.data()
+        })
+
+      if(!list) {
+        return reject(new Error('Invalid join link'))
+      }
+
+      const { id, owner, title } = list
+
+      // User is the owner himself
+      if(userId === owner) {
+        return reject(new Error('You are the owner of this list'))
+      }
+
+      // Check if user is already part of the list
+      const res = await firebase.firestore().collection('user_list')
+        .where('userId', '==', userId)
+        .where('listId', '==', id).get()
+        .then(doc => {
+          if(doc.empty) {
+            // User is not in the list
+            return null
+          }
+          // User is already in the list
+          return true
+        })
+        
+      if(res) {
+        return reject(new Error('You already joined this list'))
+      }
+
+      this.addUserToList(userId, id)
+      return resolve(`Successfully joined '${title}'`)
+    })
+  },
   // addToken: (userId, token) => {
   //   return firebase.firestore().collection('users').doc(userId).set({ token })
   // },
