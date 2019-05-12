@@ -1,6 +1,5 @@
 import { put, takeLatest } from 'redux-saga/effects'
 import Firebase from 'containers/Firebase'
-import uuid from 'uuid/v4'
 
 import { toggleArticle, addArticle } from 'containers/Article/sagas'
 import { TOGGLE_ARTICLE, ADD_ARTICLE } from 'containers/Article/constants'
@@ -20,13 +19,9 @@ export function* loadLists() {
 
 export function* addList(payload) {
   try {
-    const newList = {
-      id: uuid(),
-      title: payload.data,
-    }
-
-    Firebase.addList(newList)
-    yield put(listAdded(newList))
+    const { userId, list } = payload.data
+    Firebase.addList(userId, list)
+    yield put(listAdded(list))
   } catch (err) {
     yield put(listAddedError(err))
   }
