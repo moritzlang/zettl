@@ -20,8 +20,7 @@ export class Articles extends React.PureComponent {
     return (
       <Grow
         in
-        style={{ transformOrigin: '50% 0 0' }}
-        timeout={500}>
+        style={{ transformOrigin: '50% 0 0' }} >
         <StyledList>
           {articles.size ? articles.map(a => (
             <Article
