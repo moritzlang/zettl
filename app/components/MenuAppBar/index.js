@@ -330,7 +330,7 @@ export class MenuAppBar extends React.PureComponent {
               <ZettlIcon />
             </div>
 
-            {authStatus.get('isAuthed') ? 
+            {authStatus.get('isAuthed') && (window.location.pathname === '/') ? 
               <SelectWrapper>
                 <StyledSelect
                   onChange={this.handleListChange}
@@ -391,7 +391,7 @@ export class MenuAppBar extends React.PureComponent {
             tabIndex={0}
             role='button'
             onKeyDown={() => this.toggleDrawer(false)} >
-            {authStatus.get('isAuthed') ? loggedInList : loggedOutList}
+            {authStatus.get('isAuthed') && (window.location.pathname === '/') ? loggedInList : loggedOutList}
           </div>
         </StyledSwipeableDrawer>
       </div>
