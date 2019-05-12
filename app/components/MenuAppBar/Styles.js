@@ -1,9 +1,11 @@
 import styled from 'styled-components'
 
+import { components } from 'react-select'
 import AppBar from '@material-ui/core/AppBar'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
+import CreatableSelect from 'react-select/lib/Creatable'
 
 import * as Color from 'styles/colors'
 import * as Dimension from 'styles/dimensions'
@@ -48,16 +50,57 @@ export const StyledSwipeableDrawer = styled(SwipeableDrawer)`
   }
 `
 
+export const SelectWrapper = styled.div`
+  display: flex;
+  flex-grow: 1;
+  width: 150px;
+`
+
+export const StyledSelect = styled(CreatableSelect)`
+  width: 100%;
+
+  > div:first-child {
+    background-color: transparent;
+    border-color: transparent;
+
+    &:hover {
+      background-color: ${Color.GRAY_100};
+    }
+  }
+`
+
+export const MenuButtonWrapper = styled.div`
+  display: flex;
+  flex-grow: 1;
+  justify-content: flex-end;
+`
+
+export const StyledSingleValue = styled(components.SingleValue)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`
+
+export const StyledOption = styled(components.Option)`
+  && {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+`
+
 export const styles = theme => ({
   root: {
-    width: 'auto',
+    minWidth: 240,
     maxWidth: 250,
   },
-  grow: {
+  logo: {
     flexGrow: 1,
+    marginRight: '14px',
   },
   menuButton: {
-    marginLeft: 20,
+    marginLeft: 0,
     marginRight: -12,
   },
   switchBase: {
