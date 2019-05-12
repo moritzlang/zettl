@@ -22,8 +22,8 @@ import HomePage from 'containers/HomePage/Loadable'
 import LoginPage from 'containers/LoginPage/Loadable'
 import NotFoundPage from 'containers/NotFoundPage/Loadable'
 import { signInUser } from 'containers/User/actions'
-import watchUserAuth from 'containers/User/sagas'
-import userAuthReducer from 'containers/User/reducers'
+import userSaga from 'containers/User/sagas'
+import userReducer from 'containers/User/reducers'
 import { makeSelectAuthStatus } from 'containers/User/selectors'
 import RedirectRoute from './RedirectRoute'
 
@@ -107,8 +107,8 @@ export function mapDispatchToProps(dispatch) {
   }
 }
 
-const withReducer = injectReducer({key: 'user', reducer: userAuthReducer})
-const withSaga = injectSaga({key: 'user', saga: watchUserAuth})
+const withReducer = injectReducer({key: 'user', reducer: userReducer})
+const withSaga = injectSaga({key: 'user', saga: userSaga})
 
 const withConnect = connect(
   mapStateToProps,
