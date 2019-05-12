@@ -20,6 +20,7 @@ import MenuAppBar from 'components/MenuAppBar'
 
 import HomePage from 'containers/HomePage/Loadable'
 import LoginPage from 'containers/LoginPage/Loadable'
+import JoinPage from 'containers/JoinPage/Loadable'
 import NotFoundPage from 'containers/NotFoundPage/Loadable'
 import { signInUser } from 'containers/User/actions'
 import userSaga from 'containers/User/sagas'
@@ -78,6 +79,7 @@ export class App extends React.PureComponent {
             <Switch>
               <RedirectRoute condition={authStatus.get('isAuthed')} redirectPath='/login' exact path='/' component={HomePage} />
               <RedirectRoute condition={!authStatus.get('isAuthed')} redirectPath='/' path='/login' component={LoginPage} />
+              <RedirectRoute condition={authStatus.get('isAuthed')} redirectPath='/login' path='/join/:key' component={JoinPage} />
               <Route component={NotFoundPage} />
             </Switch>
           </Wrapper>
