@@ -1,22 +1,22 @@
 import { createSelector } from 'reselect'
 
 
-const selectUserAuth = (state) => state.user
+const selectUser = (state) => state.user
 
-const makeSelectAuthResponse = () => createSelector(
-  selectUserAuth, 
+const makeSelectUser = () => createSelector(
+  selectUser, 
   (user) => user
 )
 
 const makeSelectAuthStatus = () => createSelector(
-  selectUserAuth, 
+  selectUser, 
   (user) =>
     user.delete('details')
       .set('isAuthed', user.get('details') ? !!user.get('details').size : false)
 )
 
 export {
-  selectUserAuth,
-  makeSelectAuthResponse,
+  selectUser,
+  makeSelectUser,
   makeSelectAuthStatus,
 }
