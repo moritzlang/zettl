@@ -4,7 +4,7 @@ import ImmutablePropTypes from 'react-immutable-proptypes'
 
 import { compose } from 'redux'
 import { connect } from 'react-redux'
-import { List } from 'immutable'
+import { List, Map } from 'immutable'
 import injectSaga from 'utils/injectSaga'
 import injectReducer from 'utils/injectReducer'
 import { createStructuredSelector } from 'reselect'
@@ -17,16 +17,11 @@ import { loadLists } from 'containers/List/actions'
 import { makeSelectLists } from 'containers/List/selectors'
 import listSaga from 'containers/List/sagas'
 import listReducer from 'containers/List/reducers'
+import { makeSelectUser } from 'containers/User/selectors'
 
 import { Wrapper } from './Styles'
 
 export class HomePage extends React.PureComponent {
-  constructor(props) {
-    super(props)
-    this.state = {
-      currentList: 'dHvgmOh41LmRH1gmGlVY',
-    }
-  }
 
   componentDidMount() {
     this.props.onLoadLists()
@@ -48,10 +43,10 @@ export class HomePage extends React.PureComponent {
   }
 
   render() {
-    // const { currentList } = this.state
-    const { lists } = this.props
-
-    const list = lists && lists.size ? lists.get('lists').last() : List()
+    const { lists, user } = this.props
+    const currentList = user ? user.get('currentList') : null
+    const allLists = lists && lists.size ? lists.get('lists') : List()
+    const list = currentList ? allLists.get(currentList) : allLists.last()
     const articles = list && list.size ? list.get('articles') : List()
 
     return (
@@ -74,9 +69,12 @@ HomePage.propTypes = {
   onLoadLists: PropTypes.func.isRequired,
   onToggleArticle: PropTypes.func.isRequired,
   onAddArticle: PropTypes.func.isRequired,
+  user: ImmutablePropTypes.map,
   lists: ImmutablePropTypes.mapContains({
     lists: ImmutablePropTypes.orderedMapOf(
       ImmutablePropTypes.mapContains({
+        id: PropTypes.string,
+        owner: PropTypes.string,
         title: PropTypes.string,
         articles: ImmutablePropTypes.listOf(
           ImmutablePropTypes.mapContains({
@@ -91,11 +89,13 @@ HomePage.propTypes = {
 }
 
 HomePage.defaultProps = {
-  lists: Map,
+  lists: Map(),
+  user: Map(),
 }
 
 const mapStateToProps = createStructuredSelector({
   lists: makeSelectLists(),
+  user: makeSelectUser(),
 })
 
 export function mapDispatchToProps(dispatch) {
