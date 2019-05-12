@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import ImmutablePropTypes from 'react-immutable-proptypes'
 import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { Map } from 'immutable'
@@ -8,17 +9,23 @@ import injectReducer from 'utils/injectReducer'
 import { createStructuredSelector } from 'reselect'
 
 import Firebase from 'containers/Firebase'
-import { makeSelectAuthResponse, makeSelectAuthStatus } from 'containers/User/selectors'
-import { signOutUser } from 'containers/User/actions'
+
+import { makeSelectUser, makeSelectAuthStatus } from 'containers/User/selectors'
+import { signOutUser, saveCurrentList } from 'containers/User/actions'
 import userSaga from 'containers/User/sagas'
 import userReducer from 'containers/User/reducers'
 
-import toUint8Array from 'urlb64touint8array'
+import { makeSelectListsOverview } from 'containers/List/selectors'
+import { addList } from 'containers/List/actions'
+import listSaga from 'containers/List/sagas'
+import listReducer from 'containers/List/reducers'
+
+import uuid from 'uuid/v4'
 
 import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import IconButton from '@material-ui/core/IconButton'
-import { ZettlIcon, MenuIcon, InstallIcon, NotificationIcon, LogoutIcon } from 'images/icons'
+import { ZettlIcon, MenuIcon, InstallIcon, NotificationIcon, LogoutIcon, GroupIcon } from 'images/icons'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
@@ -31,9 +38,21 @@ import Avatar from '@material-ui/core/Avatar'
 
 import defaultImage from 'images/icon-user-circle.svg'
 
-import { styles, StyledSwipeableDrawer, StyledAppBar, StyledListItem, StyledListItemText, StyledInfoListItemText } from './Styles'
+import * as Color from 'styles/colors'
 
-const applicationServerPublicKey = 'BJTrL5xVK7gaOnuFQyu2ZqA3P0QUxX8FlUKSeu1vpYei1qiXfNBzZyNk_MGoVPWASRwR_3HZfgVhTRKIR-GBeu4'
+import {
+  styles,
+  StyledSwipeableDrawer,
+  StyledAppBar,
+  StyledListItem,
+  StyledListItemText,
+  StyledInfoListItemText,
+  SelectWrapper,
+  StyledSelect,
+  MenuButtonWrapper,
+  StyledOption,
+  StyledSingleValue,
+} from './Styles'
 
 
 export class MenuAppBar extends React.PureComponent {
@@ -45,13 +64,11 @@ export class MenuAppBar extends React.PureComponent {
       allowNotifications: false,
       notificationsBlocked: Notification.permission === 'denied',
       deferredPrompt: null,
-      swRegistration: null,
     }
   }
 
   // Cancel add-to-homescreen prompt
   deferPrompt = e => {
-    console.log('beforeinstallprompt Event fired')
     e.preventDefault()
     this.setState({ deferredPrompt: e })
   }
@@ -63,34 +80,23 @@ export class MenuAppBar extends React.PureComponent {
       deferredPrompt.prompt()
 
       // Follow what the user has done with the prompt.
+      // eslint-disable-next-line no-unused-vars
       deferredPrompt.userChoice.then(choiceResult => {
-        if(choiceResult.outcome === 'accepted') {
-          console.log('User accepted the A2HS prompt')
-        } else {
-          console.log('User dismissed the A2HS prompt')
-        }
-
         // Remove prompt
         this.setState({ deferredPrompt: null })
       })
     }
   }
 
-  initNotificationSwitch = () => {
-    this.state.swRegistration.pushManager.getSubscription()
-      .then((subscription) => {
-        if(!(subscription === null)) {
-          // User is subscribed to notifications
-          this.setState({ allowNotifications: true })
-        } else {
-          this.setState({ allowNotifications: false })
-        }
-      })
-  }
-
   componentDidMount() {
     window.addEventListener('beforeinstallprompt', this.deferPrompt)
     this.initPushNotifications()
+
+    // Only works if app is focused
+    // TODO: display toast or badge in UI
+    Firebase.messaging.onMessage(payload => {
+      console.log('onMessage: ', payload)
+    })
   }
 
   componentWillUnmount() {
@@ -101,13 +107,36 @@ export class MenuAppBar extends React.PureComponent {
     this.setState({ drawerOpen: open })
   }
 
+  initNotificationSwitch = () => {
+    console.log("init switch")
+    if(Notification.permission !== 'granted') {
+      console.log('user is NOT subscribed')
+      // User is not subscribed to notifications
+      this.setState({ allowNotifications: false })
+    } else {
+      console.log('user is subscribed')
+      // User is subscribed to notifications
+      this.setState({ allowNotifications: true })
+
+      // Update token in database in case there is a new one
+      Firebase.messaging
+        .requestPermission()
+        .then(async () => {
+          const token = await Firebase.messaging.getToken()
+          console.log(token)
+          // save token in db
+          // this.updateSubscriptionOnServer(token)
+        })
+    }
+  }
+
   initPushNotifications = () => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       // Service Worker and Push is supported
       this.setState({ showNotificationSwitch: true })
       navigator.serviceWorker.register('sw.js')
-        .then((swReg) => {
-          this.setState({ swRegistration: swReg })
+        .then((registration) => {
+          Firebase.messaging.useServiceWorker(registration)
           this.initNotificationSwitch()
         })
         .catch((err) => {
@@ -120,46 +149,34 @@ export class MenuAppBar extends React.PureComponent {
   }
 
   subscribeUser = () => {
-    const applicationServerKey = toUint8Array(applicationServerPublicKey)
-    this.state.swRegistration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey,
-    })
-      .then(subscription => {
-        // User is subscribed
-        this.updateSubscriptionOnServer(subscription)
+    console.log("subscribe")
+    Firebase.messaging
+      .requestPermission()
+      .then(async () => {
+        const token = await Firebase.messaging.getToken()
+        console.log(token)
+        // save token in db
+        console.log(Firebase.auth().currentUser)
+        // this.updateSubscriptionOnServer(subscription)
         this.setState({ allowNotifications: true })
       })
-      .catch(() => {
-        // Failed to subscribe the user
+      .catch((err) => {
         this.setState({ allowNotifications: false })
+        console.log('Unable to get permission to notify.', err)
       })
   }
 
   unsubscribeUser = () => {
-    this.state.swRegistration.pushManager.getSubscription()
-      .then(subscription => {
-        if (subscription) {
-          return subscription.unsubscribe()
-        }
-        return null
-      })
-      .catch(err => {
-        console.log('Error unsubscribing', err)
-      })
-      .then(() => {
-        // User is unsubscribed
-        this.updateSubscriptionOnServer(null)
-        this.setState({ allowNotifications: false })
-      })
-  }
+    console.log("unsubscribe")
+    
+    // TODO: How to unsubscribe
+    console.log(Firebase.auth().currentUser)
 
-  // TODO: Send subscription to application server
-  updateSubscriptionOnServer = (subscription) => {
-    if(subscription) {
-      console.log(subscription)
-      console.log(JSON.stringify(subscription))
-    }
+    // User is unsubscribed
+    // delete token in db
+    console.log(Firebase.deleteToken())
+    // this.updateSubscriptionOnServer(null)
+    this.setState({ allowNotifications: false })
   }
 
   toggleNotifications = () => {
@@ -170,14 +187,41 @@ export class MenuAppBar extends React.PureComponent {
     }
   }
 
+  handleListChange = (newValue) => {
+    const userId = this.props.user.getIn(['details', 'uid'])
+    this.props.onSaveCurrentList({ userId, value: newValue.value })
+  }
+
+  handleListCreate = (inputValue) => {
+    const userId = this.props.user.getIn(['details', 'uid'])
+    const list = {
+      id: uuid(),
+      title: inputValue,
+      owner: userId,
+    }
+
+    this.props.onAddList({ userId, list })
+    // Set newly created list to current list
+    this.props.onSaveCurrentList({ userId, value: list.id })
+  };
+
   render() {
-    const { classes, authStatus } = this.props
+    const {
+      classes,
+      authStatus,
+      user,
+      listsOverview,
+    } = this.props
+
     const {
       allowNotifications,
       deferredPrompt,
       showNotificationSwitch,
       notificationsBlocked,
     } = this.state
+    
+    const currentList = listsOverview.find(list => list.value === user.get('currentList'))
+    const lastList = listsOverview.length ? listsOverview[listsOverview.length - 1] : null
 
     const loggedInList = (
       <List className={classes.root}>
@@ -186,11 +230,11 @@ export class MenuAppBar extends React.PureComponent {
             <Avatar
               alt='Avatar'
               onError={(e) => { e.target.src = defaultImage }}
-              src={this.props.user.getIn(['details', 'photoURL'])} />
+              src={user.getIn(['details', 'photoURL'])} />
           </ListItemAvatar>
           <StyledListItemText
-            primary={this.props.user.getIn(['details', 'displayName'])}
-            secondary={this.props.user.getIn(['details', 'email'])} />
+            primary={user.getIn(['details', 'displayName'])}
+            secondary={user.getIn(['details', 'email'])} />
         </StyledListItem>
 
         <Divider />
@@ -258,21 +302,84 @@ export class MenuAppBar extends React.PureComponent {
       </List>
     )
 
+    const SingleValue = ({ children, ...props }) => {
+      const isOwner = props.data.owner === user.getIn(['details', 'uid'])
+      return (
+        <StyledSingleValue {...props}>
+          {children}
+          {!isOwner && <GroupIcon style={{ height: 20 }}  />}
+        </StyledSingleValue>
+      )
+    }
+
+    const Option = (props) => {
+      const isOwner = props.data.owner === user.getIn(['details', 'uid'])
+      return (
+        <StyledOption {...props}>
+          {props.data.label}
+          {!isOwner && <GroupIcon style={{ height: 20 }}  />}
+        </StyledOption>
+      )
+    }
+
     return (
       <div>
         <StyledAppBar>
           <Toolbar>
-            <div className={classes.grow}>
+            <div className={classes.logo}>
               <ZettlIcon />
             </div>
 
-            <IconButton
-              className={classes.menuButton}
-              aria-label='Menu'
-              color='inherit'
-              onClick={() => this.toggleDrawer(true)} >
-              <MenuIcon />
-            </IconButton>
+            {authStatus.get('isAuthed') ? 
+              <SelectWrapper>
+                <StyledSelect
+                  onChange={this.handleListChange}
+                  onCreateOption={this.handleListCreate}
+                  options={listsOverview}
+                  value={currentList || lastList}
+                  defaultValue={currentList || lastList}
+                  placeholder="Tap for new list"
+                  components={{
+                    SingleValue,
+                    Option,
+                  }}
+                  theme={(theme) => ({
+                    ...theme,
+                    borderRadius: 3,
+                    colors: {
+                      ...theme.colors,
+                      primary25: Color.GRAY_050,
+                      primary: Color.GRAY_100,
+                    },
+                  })}
+                  styles={{
+                    indicatorSeparator: () => ({display:'none'}),
+                    control: (base, state) => ({
+                      ...base,
+                      border: state.isFocused ? 0 : 0,
+                      boxShadow: state.isFocused ? 0 : 0,
+                      backgroundColor: state.isFocused ? Color.GRAY_100 : Color.GRAY_100,
+                    }),
+                    option: base => ({
+                      ...base,
+                      height: 50,
+                      lineHeight: 2,
+                      color: Color.BLACK,
+                    }),
+                  }}
+                />
+              </SelectWrapper>
+              : null}
+
+            <MenuButtonWrapper>
+              <IconButton
+                className={classes.menuButton}
+                aria-label='Menu'
+                color='inherit'
+                onClick={() => this.toggleDrawer(true)} >
+                <MenuIcon />
+              </IconButton>
+            </MenuButtonWrapper>
           </Toolbar>
         </StyledAppBar>
         <StyledSwipeableDrawer
@@ -292,34 +399,41 @@ export class MenuAppBar extends React.PureComponent {
   }
 }
 
-MenuAppBar.propTypes = {
-  classes: PropTypes.object.isRequired,
-}
 
 MenuAppBar.propTypes = {
-  authStatus: PropTypes.instanceOf(Map),
-  user: PropTypes.instanceOf(Map),
   onSignOutUser: PropTypes.func.isRequired,
+  onSaveCurrentList: PropTypes.func.isRequired,
+  onAddList: PropTypes.func.isRequired,
+  classes: PropTypes.object.isRequired,
+  authStatus: ImmutablePropTypes.map,
+  user: ImmutablePropTypes.map,
+  listsOverview: PropTypes.array,
 }
 
 MenuAppBar.defaultProps = {
   user: Map(),
   authStatus: Map(),
+  listsOverview: [],
 }
 
 const mapStateToProps = createStructuredSelector({
-  user: makeSelectAuthResponse(),
+  user: makeSelectUser(),
   authStatus: makeSelectAuthStatus(),
+  listsOverview: makeSelectListsOverview(),
 })
 
 export function mapDispatchToProps(dispatch) {
   return {
     onSignOutUser: () => dispatch(signOutUser()),
+    onSaveCurrentList: data => dispatch(saveCurrentList(data)),
+    onAddList: data => dispatch(addList(data)),
   }
 }
 
-const withReducer = injectReducer({key: 'user', reducer: userReducer})
-const withSaga = injectSaga({key: 'user', saga: userSaga})
+const withUserReducer = injectReducer({key: 'user', reducer: userReducer})
+const withUserSaga = injectSaga({key: 'user', saga: userSaga})
+const withListReducer = injectReducer({key: 'lists', reducer: listReducer})
+const withListSaga = injectSaga({key: 'lists', saga: listSaga})
 
 const withConnect = connect(
   mapStateToProps,
@@ -327,8 +441,10 @@ const withConnect = connect(
 )
 
 export default compose(
-  withReducer,
-  withSaga,
+  withListReducer,
+  withListSaga,
+  withUserReducer,
+  withUserSaga,
   withConnect,
   withStyles(styles),
 )(MenuAppBar)
