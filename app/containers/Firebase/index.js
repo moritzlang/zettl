@@ -1,7 +1,7 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
-// import 'firebase/messaging'
+import 'firebase/messaging'
 
 import { fromJS, List, Map, OrderedMap } from 'immutable'
 
@@ -18,8 +18,8 @@ const config = {
 // Initialize firebase
 if(!firebase.apps.length) {
   firebase.initializeApp(config)
-  // firebase.messaging()
-  //   .usePublicVapidKey('BMmSJaZxoMRvgUp_Bf8zhn3Z3DBBvK6MsjvbcNh8gcVxqWX8-8MjB5YvZpBL_AfgRd7AaXsWmCJjOvlH87OCE_o')
+  firebase.messaging()
+    .usePublicVapidKey('BMmSJaZxoMRvgUp_Bf8zhn3Z3DBBvK6MsjvbcNh8gcVxqWX8-8MjB5YvZpBL_AfgRd7AaXsWmCJjOvlH87OCE_o')
 
 // // Register service worker
 // if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -37,7 +37,7 @@ if(!firebase.apps.length) {
 export default {
   auth: () => firebase.auth(),
   db: firebase.firestore(),
-  // messaging: firebase.messaging(),
+  messaging: firebase.messaging(),
   authUser: () =>
     new Promise((resolve, reject) => {
       firebase.auth().onAuthStateChanged(user => {
@@ -75,6 +75,7 @@ export default {
           const list = await Promise.all([this.getListDetails(listId), this.getArticles(listId)])
             .then(([listDetails, articles]) => (
               Map({
+                id: listId,
                 ...listDetails,
                 articles,
               })
@@ -100,14 +101,28 @@ export default {
         }, []))
       .then((articles) => List(articles))
   },
+  addList(userId, list) {
+    firebase.firestore().collection('lists').doc(list.id).set(list)
+    this.addUserToList(userId, list.id)
+  },
+  addUserToList: (userId, listId) => (
+    firebase.firestore().collection('user_list').doc().set({
+      userId,
+      listId,
+    })
+  ),
   addArticle: article => (
     firebase.firestore().collection('articles').doc(article.id).set(article)
   ),
   updateArticle: (id, data) => (
-    new Promise((resolve) => {
-      firebase.firestore().collection('articles').doc(id).update(data)
-        .then(res => resolve(res))
-    })
+    firebase.firestore().collection('articles').doc(id).update(data)
+  ),
+  getUser(userId) {
+    return firebase.firestore().collection('users').doc(userId).get()
+      .then(u => u.data())
+  },
+  updateUser: (id, data) => (
+    firebase.firestore().collection('users').doc(id).update(data)
   ),
   // addToken: (userId, token) => {
   //   return firebase.firestore().collection('users').doc(userId).set({ token })
