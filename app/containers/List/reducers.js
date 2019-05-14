@@ -7,6 +7,9 @@ import {
   TOGGLE_ARTICLE,
   TOGGLE_ARTICLE_SUCCESS,
   TOGGLE_ARTICLE_ERROR,
+  PROCESS_ARTICLE,
+  PROCESS_ARTICLE_SUCCESS,
+  PROCESS_ARTICLE_ERROR,
 } from 'containers/Article/constants'
 
 import {
@@ -87,6 +90,23 @@ function listReducer(state = initialState, action) {
       return state
         .set('articleToggling', false)
         .set('articleToggleError', action.error)
+    case PROCESS_ARTICLE:
+      return state
+        .set('articleProcessing', true)
+        .set('articleProcessError', null)
+    case PROCESS_ARTICLE_SUCCESS: {
+      const { listId, articleId, success } = response
+      const newState = state.setIn(['lists', listId, 'articles', getArticleIndex(listId, articleId), 'processing'], false)
+      if(success) {
+        return newState.setIn(['lists', listId, 'articles', getArticleIndex(listId, articleId), 'success'], success)
+      }
+      return newState
+        .set('articleProcessing', false)
+    }
+    case PROCESS_ARTICLE_ERROR:
+      return state
+        .set('articleProcessing', false)
+        .set('articleProcessError', action.error)
     default:
       return state
   }

@@ -1,8 +1,8 @@
 import { put, takeLatest } from 'redux-saga/effects'
 import Firebase from 'containers/Firebase'
 
-import { toggleArticle, addArticle } from 'containers/Article/sagas'
-import { TOGGLE_ARTICLE, ADD_ARTICLE } from 'containers/Article/constants'
+import { toggleArticle, addArticle, processArticle } from 'containers/Article/sagas'
+import { TOGGLE_ARTICLE, ADD_ARTICLE, PROCESS_ARTICLE } from 'containers/Article/constants'
 
 import { listsLoaded, listsLoadingError, listAdded, listAddedError } from './actions'
 import { LOAD_LISTS, ADD_LIST } from './constants'
@@ -32,4 +32,5 @@ export default function* listSaga() {
   yield takeLatest(ADD_LIST, addList)
   yield takeLatest(TOGGLE_ARTICLE, toggleArticle)
   yield takeLatest(ADD_ARTICLE, addArticle)
+  yield takeLatest(PROCESS_ARTICLE, processArticle)
 }
