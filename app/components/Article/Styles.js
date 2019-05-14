@@ -7,7 +7,7 @@ import ListItemText from '@material-ui/core/ListItemText'
 import * as Color from 'styles/colors'
 import * as Shadow from 'styles/shadows'
 import * as Dimension from 'styles/dimensions'
-
+import { TextSmall } from 'styles/typography'
 
 export const StyledList = styled(List)`
   width: 100%;
@@ -23,9 +23,10 @@ export const ListItemWrapper = styled.div`
 
 export const StyledListItem = styled(ListItem)`
   width: 100%;
-  height: 60px;
+  height: ${props => props.status ? '70px' : '60px'}};
   margin-top: 0.5em;
   margin-bottom: 0.5em;
+  padding-bottom: ${props => props.status ? '26px' : '8px'}};
 `
 
 export const StyledListItemText = styled(ListItemText)`
@@ -39,4 +40,16 @@ export const StyledListItemText = styled(ListItemText)`
       overflow: hidden;
     }
   }
+`
+
+export const Status = styled.div`
+  position: absolute;
+  bottom: 0px;
+  left: 0;
+  padding: 0 16px 8px 19px;
+`
+
+export const StatusInfo = styled(TextSmall)`
+  margin: 0;
+  color: ${Color.RED_400};
 `

@@ -7,8 +7,8 @@ import IconButton from '@material-ui/core/IconButton'
 import Tooltip from '@material-ui/core/Tooltip'
 
 import * as Color from 'styles/colors'
-import { CheckboxIcon, CheckboxCheckedIcon, CloseIcon } from 'images/icons'
-import { StyledListItem, ListItemWrapper, StyledListItemText } from './Styles'
+import { CheckboxIcon, CheckboxCheckedIcon, CloseIcon, ImportantIcon } from 'images/icons'
+import { StyledListItem, ListItemWrapper, StyledListItemText, Status, StatusInfo } from './Styles'
 
 export class Articles extends React.PureComponent {
 
@@ -17,11 +17,24 @@ export class Articles extends React.PureComponent {
   }
 
   render() {
-    const { id, value, checked } = this.props
+    const { id, value, checked, status } = this.props
 
     return (
       <ListItemWrapper>
-        <StyledListItem role={undefined} dense button onClick={() => this.handleCheckToggle(id, !checked)}>
+        <StyledListItem
+          status={!status ? 1 : 0}
+          role={undefined}
+          dense
+          button
+          onClick={() => this.handleCheckToggle(id, !checked)}>
+
+          {!status &&
+            <ImportantIcon
+              colors={{
+                primary: Color.RED_100,
+                secondary: Color.RED_600,
+              }}
+            />}
           <Checkbox
             checked={checked}
             tabIndex={-1}
@@ -29,6 +42,10 @@ export class Articles extends React.PureComponent {
             checkedIcon={<CheckboxCheckedIcon colors={{ primary: Color.TEAL_500 }} />}
             disableRipple />
           <StyledListItemText primary={value} />
+          {!status &&
+            <Status>
+              <StatusInfo>No connection, could not save article.</StatusInfo>
+            </Status>}
           <ListItemSecondaryAction>
             <Tooltip title='Delete' placement='left'>
               <IconButton
@@ -37,6 +54,7 @@ export class Articles extends React.PureComponent {
               </IconButton>
             </Tooltip>
           </ListItemSecondaryAction>
+
         </StyledListItem>
       </ListItemWrapper>
     )
@@ -48,10 +66,12 @@ Articles.propTypes = {
   value: PropTypes.string.isRequired,
   checked: PropTypes.bool,
   onToggle: PropTypes.func,
+  status: PropTypes.bool,
 }
 
 Articles.defaultProps = {
   checked: false,
+  status: true,
 }
 
 export default Articles
