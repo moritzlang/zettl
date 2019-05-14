@@ -87,9 +87,11 @@ export class MenuAppBar extends React.PureComponent {
 
     // Only works if app is focused
     // TODO: display toast or badge in UI
-    Firebase.messaging.onMessage(payload => {
-      console.log('onMessage: ', payload)
-    })
+    if(Firebase.messaging) {
+      Firebase.messaging.onMessage(payload => {
+        console.log('onMessage: ', payload)
+      })
+    }
   }
 
   toggleDrawer = (open) => {

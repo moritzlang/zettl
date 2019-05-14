@@ -19,11 +19,14 @@ const config = {
 // Initialize firebase
 if(!firebase.apps.length) {
   firebase.initializeApp(config)
-  firebase.messaging()
-    .usePublicVapidKey('BMmSJaZxoMRvgUp_Bf8zhn3Z3DBBvK6MsjvbcNh8gcVxqWX8-8MjB5YvZpBL_AfgRd7AaXsWmCJjOvlH87OCE_o')
+
+  if(firebase.messaging.isSupported()) {
+    firebase.messaging()
+      .usePublicVapidKey('BMmSJaZxoMRvgUp_Bf8zhn3Z3DBBvK6MsjvbcNh8gcVxqWX8-8MjB5YvZpBL_AfgRd7AaXsWmCJjOvlH87OCE_o')
+  }
   
   // Cache firestore data for offline usage
-  firebase.firestore().enablePersistence()
+  firebase.firestore().enablePersistence({ experimentalTabSynchronization: true })
     .catch(err => {
       console.error(err)
     })
@@ -44,7 +47,7 @@ if(!firebase.apps.length) {
 export default {
   auth: () => firebase.auth(),
   db: firebase.firestore(),
-  messaging: firebase.messaging(),
+  messaging: firebase.messaging.isSupported() ? firebase.messaging() : null,
   authUser: () =>
     new Promise((resolve, reject) => {
       firebase.auth().onAuthStateChanged(user => {
