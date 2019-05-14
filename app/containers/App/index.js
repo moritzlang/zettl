@@ -46,10 +46,13 @@ export class App extends React.PureComponent {
     super(props)
     this.state = {
       isAuthenticating: true,
+      deferredPrompt: null,
     }
   }
 
   componentDidMount() {
+    window.addEventListener('beforeinstallprompt', this.deferPrompt)
+
     Firebase.authUser()
       .then(user => {
         this.props.onSignInUser(user)
@@ -61,12 +64,35 @@ export class App extends React.PureComponent {
   }
 
   componentWillUnmount() {
-    // TODO: unsubscribe the observer
+    window.removeEventListener('beforeinstallprompt', this.deferPrompt)
+
+    // TODO: Unsubscribe the observer
     // this.unregisterAuthObserver()
   }
 
+  // Cancel add-to-homescreen prompt and store it
+  deferPrompt = e => {
+    e.preventDefault()
+    this.setState({ deferredPrompt: e })
+  }
+
+  installApp = () => {
+    const { deferredPrompt } = this.state
+    if(deferredPrompt !== null) {
+      // Show the prompt
+      deferredPrompt.prompt()
+
+      // Follow what the user has done with the prompt
+      // eslint-disable-next-line no-unused-vars
+      deferredPrompt.userChoice.then(choiceResult => {
+        // Remove prompt
+        this.setState({ deferredPrompt: null })
+      })
+    }
+  }
+
   render() {
-    const { isAuthenticating } = this.state
+    const { isAuthenticating, deferredPrompt } = this.state
     const { authStatus } = this.props
 
     if(isAuthenticating || authStatus.get('authLoading')) return null
@@ -74,7 +100,7 @@ export class App extends React.PureComponent {
     return (
       <JssProvider jss={jss} generateClassName={generateClassName}>
         <MuiThemeProvider theme={theme}>
-          <MenuAppBar />
+          <MenuAppBar installApp={this.installApp} showInstall={!!deferredPrompt} />
           <Wrapper>
             <Switch>
               <RedirectRoute condition={authStatus.get('isAuthed')} redirectPath='/login' exact path='/' component={HomePage} />

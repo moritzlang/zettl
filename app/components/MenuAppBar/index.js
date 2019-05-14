@@ -74,33 +74,14 @@ export class MenuAppBar extends React.PureComponent {
       showNotificationSwitch: false,
       allowNotifications: false,
       notificationsBlocked: Notification.permission === 'denied',
-      deferredPrompt: null,
     }
   }
 
-  // Cancel add-to-homescreen prompt
-  deferPrompt = e => {
-    e.preventDefault()
-    this.setState({ deferredPrompt: e })
-  }
-
-  installApp = () => {
-    const { deferredPrompt } = this.state
-    if(deferredPrompt !== null) {
-      // Show the prompt
-      deferredPrompt.prompt()
-
-      // Follow what the user has done with the prompt.
-      // eslint-disable-next-line no-unused-vars
-      deferredPrompt.userChoice.then(choiceResult => {
-        // Remove prompt
-        this.setState({ deferredPrompt: null })
-      })
-    }
+  handleInstall = () => {
+    this.props.installApp()
   }
 
   componentDidMount() {
-    window.addEventListener('beforeinstallprompt', this.deferPrompt)
     this.initPushNotifications()
 
     // Only works if app is focused
@@ -108,10 +89,6 @@ export class MenuAppBar extends React.PureComponent {
     Firebase.messaging.onMessage(payload => {
       console.log('onMessage: ', payload)
     })
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('beforeinstallprompt', this.deferPrompt)
   }
 
   toggleDrawer = (open) => {
@@ -237,11 +214,11 @@ export class MenuAppBar extends React.PureComponent {
       authStatus,
       user,
       listsOverview,
+      showInstall,
     } = this.props
 
     const {
       allowNotifications,
-      deferredPrompt,
       showNotificationSwitch,
       notificationsBlocked,
     } = this.state
@@ -300,10 +277,10 @@ export class MenuAppBar extends React.PureComponent {
           <ListItemText primary='Share this list' />
         </StyledListItem>}
 
-        {deferredPrompt &&
+        {showInstall &&
         <StyledListItem
           button
-          onClick={() => this.installApp()} >
+          onClick={() => this.handleInstall()} >
           <ListItemIcon>
             <InstallIcon />
           </ListItemIcon>
@@ -444,12 +421,15 @@ MenuAppBar.propTypes = {
   authStatus: ImmutablePropTypes.map,
   user: ImmutablePropTypes.map,
   listsOverview: PropTypes.array,
+  installApp: PropTypes.func.isRequired,
+  showInstall: PropTypes.bool,
 }
 
 MenuAppBar.defaultProps = {
   user: Map(),
   authStatus: Map(),
   listsOverview: [],
+  showInstall: false,
 }
 
 const mapStateToProps = createStructuredSelector({
