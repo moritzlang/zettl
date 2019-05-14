@@ -24,13 +24,14 @@ export class Articles extends React.PureComponent {
         <StyledList>
           {articles.size ? articles.map(a => (
             <Article
+              status={a.get('processing') ? true : a.get('success')}
               key={a.get('id')}
               id={a.get('id')}
               value={a.get('value')}
               checked={a.get('checked')}
               onToggle={this.handleCheckToggle} />
           )).reverse()
-            // TODO: style empty state
+            // TODO: Style empty state
             : (
               <div>
                 <h3>Your list is empty</h3>
