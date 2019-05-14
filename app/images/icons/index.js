@@ -130,3 +130,15 @@ export const LinkIcon = props => {
     </SvgIcon>
   )
 }
+
+export const ImportantIcon = props => {
+  const colorPrimary = props.colors && props.colors.primary ? props.colors.primary : Color.ICON_PRIMARY
+  const colorSecondary = props.colors && props.colors.secondary ? props.colors.secondary : Color.ICON_SECONDARY
+  
+  return (
+    <SvgIcon {...props}>
+      <path fill={colorPrimary} d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20z"/>
+      <path fill={colorSecondary} d="M12 18a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm1-5.9c-.13 1.2-1.88 1.2-2 0l-.5-5a1 1 0 0 1 1-1.1h1a1 1 0 0 1 1 1.1l-.5 5z"/>
+    </SvgIcon>
+  )
+}
