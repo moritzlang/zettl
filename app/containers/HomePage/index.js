@@ -73,15 +73,28 @@ export class HomePage extends React.PureComponent {
 
     return (
       <Wrapper>
-        <MainInput
-          name='add-article'
-          placeholder='Add article'
-          autoComplete='off'
-          onSubmit={this.handleSubmit}
-        />
-        {!lists.get('listsLoading')
-          ? <Articles onToggle={this.handleCheckToggle} articles={articles} />
-          : null}
+        {list ?
+          <div>
+            <MainInput
+              name='add-article'
+              placeholder='Add article'
+              autoComplete='off'
+              onSubmit={this.handleSubmit}
+            />
+            {!lists.get('listsLoading') &&
+            <Articles onToggle={this.handleCheckToggle} articles={articles} />}
+          </div>
+          :
+          <div>
+            {!lists.get('listsLoading') &&
+            <div>
+              <h3>You don&apos;t have a list yet</h3>
+              <p>Tap in the input field above to create a list.
+                After that you can start adding articles.
+              </p>
+            </div>}
+          </div>
+        }
       </Wrapper>
     )
   }
