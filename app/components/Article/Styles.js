@@ -23,10 +23,10 @@ export const ListItemWrapper = styled.div`
 
 export const StyledListItem = styled(ListItem)`
   width: 100%;
-  height: ${props => props.status ? '70px' : '60px'}};
+  height: ${props => props.status ? '70px' : '60px'};
   margin-top: 0.5em;
   margin-bottom: 0.5em;
-  padding-bottom: ${props => props.status ? '26px' : '8px'}};
+  padding-bottom: ${props => props.status ? '26px' : '8px'};
 `
 
 export const StyledListItemText = styled(ListItemText)`
