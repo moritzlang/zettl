@@ -99,6 +99,7 @@
     "redux-saga": "1.0.2",
     "reselect": "4.0.0",
     "sanitize.css": "8.0.0",
+    "serviceworker-webpack-plugin": "^1.0.1",
     "styled-components": "4.2.0",
     "urlb64touint8array": "^1.0.3",
     "uuid": "^3.3.2"
@@ -151,7 +152,6 @@
     "ngrok": "3.1.1",
     "node-plop": "0.18.0",
     "null-loader": "0.1.1",
-    "offline-plugin": "^5.0.7",
     "plop": "2.3.0",
     "pre-commit": "1.2.2",
     "prettier": "1.17.0",
