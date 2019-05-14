@@ -1,4 +1,4 @@
-import { put, takeLatest } from 'redux-saga/effects'
+import { put, takeLatest, call, fork } from 'redux-saga/effects'
 
 import Firebase from 'containers/Firebase'
 
@@ -8,7 +8,7 @@ import { SIGN_IN_USER, SAVE_CURRENT_LIST } from './constants'
 
 export function* signInSaga(payload) {
   try {
-    const user = yield Firebase.getUser(payload.data.uid)
+    const user = yield call(Firebase.getUser, payload.data.uid)
     yield put(userSignedIn({ details: payload.data, ...user }))
   } catch (err) {
     yield put(userSignInError(err))
@@ -18,7 +18,7 @@ export function* signInSaga(payload) {
 export function* saveCurrentList(payload) {
   try {
     const { userId, value } = payload.data
-    Firebase.updateUser( userId, { currentList: value })
+    yield fork(Firebase.updateUser, userId, { currentList: value })
     yield put(currentListSaved(payload))
   } catch (err) {
     yield put(currentListSavingError(err))
