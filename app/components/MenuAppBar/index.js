@@ -24,6 +24,7 @@ import listSaga from 'containers/List/sagas'
 import listReducer from 'containers/List/reducers'
 
 import uuid from 'uuid/v4'
+import { components } from 'react-select'
 
 import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
@@ -96,7 +97,7 @@ export class MenuAppBar extends React.PureComponent {
   }
 
   initNotificationSwitch = () => {
-    console.log("init switch")
+    console.log('init switch')
     if(Notification.permission !== 'granted') {
       console.log('user is NOT subscribed')
       // User is not subscribed to notifications
@@ -139,7 +140,7 @@ export class MenuAppBar extends React.PureComponent {
   }
 
   subscribeUser = () => {
-    console.log("subscribe")
+    console.log('subscribe')
     Firebase.messaging
       .requestPermission()
       .then(async () => {
@@ -157,7 +158,7 @@ export class MenuAppBar extends React.PureComponent {
   }
 
   unsubscribeUser = () => {
-    console.log("unsubscribe")
+    console.log('unsubscribe')
     
     // TODO: How to unsubscribe
     console.log(Firebase.auth().currentUser)
@@ -325,13 +326,18 @@ export class MenuAppBar extends React.PureComponent {
 
     const Option = (props) => {
       const isOwner = props.data.owner === user.getIn(['details', 'uid'])
-      const isCreateOption = props.data.label.indexOf('Create "') === 0
+      const isCreateOption = props.data && (props.data.label.indexOf('Create "') === 0)
       return (
         <StyledOption {...props}>
           {props.data.label}
           {(!isOwner && !isCreateOption) ? <GroupIcon style={{ height: 20 }} /> : null}
         </StyledOption>
       )
+    }
+
+    const NoOptionsMessage = (props) => {
+      if (props.options.length) return null
+      return <components.NoOptionsMessage {...props}>You have no lists</components.NoOptionsMessage>
     }
 
     return (
@@ -352,10 +358,11 @@ export class MenuAppBar extends React.PureComponent {
                   options={listsOverview}
                   value={actualList}
                   defaultValue={actualList}
-                  placeholder="Tap for new list"
+                  placeholder='Tap for new list'
                   components={{
                     SingleValue,
                     Option,
+                    NoOptionsMessage,
                   }}
                   theme={(theme) => ({
                     ...theme,
