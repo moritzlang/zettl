@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import ImmutablePropTypes from 'react-immutable-proptypes'
 import { compose } from 'redux'
@@ -8,10 +9,9 @@ import injectSaga from 'utils/injectSaga'
 import injectReducer from 'utils/injectReducer'
 import { createStructuredSelector } from 'reselect'
 
-import { Link } from 'react-router-dom'
 
 import Firebase from 'containers/Firebase'
-import { url } from 'utils/config'
+import { URL } from 'utils/config'
 
 import { makeSelectUser, makeSelectAuthStatus } from 'containers/User/selectors'
 import { signOutUser, saveCurrentList } from 'containers/User/actions'
@@ -145,14 +145,16 @@ export class MenuAppBar extends React.PureComponent {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       // Service Worker and Push is supported
       this.setState({ showNotificationSwitch: true })
-      navigator.serviceWorker.register('sw.js')
-        .then((registration) => {
-          Firebase.messaging.useServiceWorker(registration)
-          this.initNotificationSwitch()
-        })
-        .catch((err) => {
-          console.error('Service Worker Error', err)
-        })
+
+      // navigator.serviceWorker.register('/service-worker.js')
+      //   .then(registration => {
+      //     // Uncomment this later
+      //     Firebase.messaging.useServiceWorker(registration)
+      //     this.initNotificationSwitch()
+      //   })
+      //   .catch((err) => {
+      //     console.error('Service Worker Error', err)
+      //   })
     } else {
       // Push messaging is not supported
       this.setState({ showNotificationSwitch: false })
@@ -222,7 +224,7 @@ export class MenuAppBar extends React.PureComponent {
       navigator.share({
         title: 'zettl',
         text: `${firstName} wants to share a list with you`,
-        url: `${url}/join/${key}`,
+        url: `${URL}/join/${key}`,
       })
         .then(() => console.log('Successful share'))
         .catch((error) => console.log('Error sharing', error))
