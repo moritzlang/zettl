@@ -2,12 +2,12 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const WebpackPwaManifest = require('webpack-pwa-manifest')
-const OfflinePlugin = require('offline-plugin')
 const { HashedModuleIdsPlugin } = require('webpack')
 const TerserPlugin = require('terser-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
+const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin')
 
-const { manifest, offlinePlugin } = require('../config/pwa-config')
+const { manifest, serviceWorker } = require('../config/pwa-config')
 
 module.exports = require('./webpack.base.babel')({
   mode: 'production',
@@ -86,10 +86,6 @@ module.exports = require('./webpack.base.babel')({
       inject: true,
     }),
 
-    // Put it in the end to capture all the HtmlWebpackPlugin's
-    // assets manipulations and do leak its manipulations to HtmlWebpackPlugin
-    new OfflinePlugin(offlinePlugin),
-
     new CompressionPlugin({
       algorithm: 'gzip',
       test: /\.js$|\.css$|\.html$/,
@@ -98,6 +94,11 @@ module.exports = require('./webpack.base.babel')({
     }),
 
     new WebpackPwaManifest(manifest),
+
+    new ServiceWorkerWebpackPlugin({
+      ...serviceWorker,
+      minimize: true,
+    }),
 
     new HashedModuleIdsPlugin({
       hashFunction: 'sha256',
