@@ -325,10 +325,11 @@ export class MenuAppBar extends React.PureComponent {
 
     const Option = (props) => {
       const isOwner = props.data.owner === user.getIn(['details', 'uid'])
+      const isCreateOption = props.data.label.indexOf('Create "') === 0
       return (
         <StyledOption {...props}>
           {props.data.label}
-          {!isOwner && <GroupIcon style={{ height: 20 }}  />}
+          {(!isOwner && !isCreateOption) ? <GroupIcon style={{ height: 20 }} /> : null}
         </StyledOption>
       )
     }
