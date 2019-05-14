@@ -9,10 +9,12 @@ import injectSaga from 'utils/injectSaga'
 import injectReducer from 'utils/injectReducer'
 import { createStructuredSelector } from 'reselect'
 
+import uuid from 'uuid/v4'
+
 import MainInput from 'components/MainInput'
 import Articles from 'components/Articles'
 
-import { toggleArticle, addArticle } from 'containers/Article/actions'
+import { toggleArticle, addArticle, articleProcessed } from 'containers/Article/actions'
 import { loadLists } from 'containers/List/actions'
 import { makeSelectLists } from 'containers/List/selectors'
 import listSaga from 'containers/List/sagas'
@@ -28,10 +30,30 @@ export class HomePage extends React.PureComponent {
   }
 
   handleSubmit = (value) => {
-    this.props.onAddArticle({
+    const newArticle = {
+      id: uuid(),
       listId: this.props.user.get('currentList'),
       value,
-    })
+      checked: false,
+      updated_at: new Date(),
+      processing: true,
+      success: false,
+    }
+
+    this.props.onAddArticle(newArticle)
+
+    /*
+      After 3 seconds we mark the article as 'processed'.
+      If the article was not successfully added to the
+      database at this point, there will be a error message
+      in the UI
+    */
+    setTimeout(() => {
+      this.props.onArticleProcessed({
+        listId: newArticle.listId,
+        articleId: newArticle.id,
+      })
+    }, 3000)
   }
 
   handleCheckToggle = (id, value) => {
@@ -69,6 +91,7 @@ HomePage.propTypes = {
   onLoadLists: PropTypes.func.isRequired,
   onToggleArticle: PropTypes.func.isRequired,
   onAddArticle: PropTypes.func.isRequired,
+  onArticleProcessed: PropTypes.func.isRequired,
   user: ImmutablePropTypes.map,
   lists: ImmutablePropTypes.mapContains({
     lists: ImmutablePropTypes.orderedMapOf(
@@ -103,6 +126,7 @@ export function mapDispatchToProps(dispatch) {
     onLoadLists: () => dispatch(loadLists()),
     onToggleArticle: data => dispatch(toggleArticle(data)),
     onAddArticle: data => dispatch(addArticle(data)),
+    onArticleProcessed: data => dispatch(articleProcessed(data)),
   }
 }
 
