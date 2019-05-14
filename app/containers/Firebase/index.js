@@ -4,7 +4,7 @@ import 'firebase/firestore'
 import 'firebase/messaging'
 
 import { fromJS, List, Map, OrderedMap } from 'immutable'
-import { url } from 'utils/config'
+import { URL } from 'utils/config'
 
 const config = {
   apiKey: 'AIzaSyAEky8TexWlTfJYkcUCmSMfcqdxoFeZOXA',
@@ -21,6 +21,12 @@ if(!firebase.apps.length) {
   firebase.initializeApp(config)
   firebase.messaging()
     .usePublicVapidKey('BMmSJaZxoMRvgUp_Bf8zhn3Z3DBBvK6MsjvbcNh8gcVxqWX8-8MjB5YvZpBL_AfgRd7AaXsWmCJjOvlH87OCE_o')
+  
+  // Cache firestore data for offline usage
+  firebase.firestore().enablePersistence()
+    .catch(err => {
+      console.error(err)
+    })
 
 // // Register service worker
 // if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -53,7 +59,7 @@ export default {
     }),
   signOut: () => firebase.auth().signOut(),
   uiConfig: {
-    signInSuccessUrl: url,
+    signInSuccessUrl: URL,
     signInOptions: [
       firebase.auth.GoogleAuthProvider.PROVIDER_ID,
       firebase.auth.FacebookAuthProvider.PROVIDER_ID,
@@ -113,7 +119,9 @@ export default {
     })
   ),
   addArticle: article => (
-    firebase.firestore().collection('articles').doc(article.id).set(article)
+    firebase.firestore().collection('articles').doc(article.id)
+      .set(article)
+      .then(() => true)
   ),
   updateArticle: (id, data) => (
     firebase.firestore().collection('articles').doc(id).update(data)
