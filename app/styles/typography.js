@@ -33,3 +33,12 @@ export const Introduction = styled.p`
   color: ${Color.GRAY_600};
   white-space: pre-wrap;
 `
+
+export const TextSmall = styled.p`
+  font-family: ${SECONDARY_FONT};
+  font-size: 12px;
+  color: ${Color.BLACK};
+  line-height: 19px;
+  word-break: break-all;
+  hyphens: auto;
+`
