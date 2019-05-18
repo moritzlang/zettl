@@ -44,7 +44,7 @@ export class Articles extends React.PureComponent {
           <StyledListItemText primary={value} />
           {!status &&
             <Status>
-              <StatusInfo>No connection, could not save article.</StatusInfo>
+              <StatusInfo>Bad connection, could not save article.</StatusInfo>
             </Status>}
           <ListItemSecondaryAction>
             <Tooltip title='Delete' placement='left'>
