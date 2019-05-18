@@ -11,10 +11,10 @@ import { createStructuredSelector } from 'reselect'
 
 
 import Firebase from 'containers/Firebase'
-import { URL } from 'utils/config'
+import { DEBUG, URL } from 'utils/config'
 
 import { makeSelectUser, makeSelectAuthStatus } from 'containers/User/selectors'
-import { signOutUser, saveCurrentList } from 'containers/User/actions'
+import { signOutUser, saveCurrentList, changeNotificationStatus } from 'containers/User/actions'
 import userSaga from 'containers/User/sagas'
 import userReducer from 'containers/User/reducers'
 
@@ -24,11 +24,13 @@ import listSaga from 'containers/List/sagas'
 import listReducer from 'containers/List/reducers'
 
 import uuid from 'uuid/v4'
+import copy from 'copy-to-clipboard'
 import { components } from 'react-select'
 
 import { withStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import IconButton from '@material-ui/core/IconButton'
+import Snackbar from '@material-ui/core/Snackbar'
 import {
   ZettlIcon,
   MenuIcon,
@@ -37,6 +39,7 @@ import {
   LogoutIcon,
   GroupIcon,
   LinkIcon,
+  CopyIcon,
 } from 'images/icons'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -72,9 +75,9 @@ export class MenuAppBar extends React.PureComponent {
     super(props)
     this.state = {
       drawerOpen: false,
-      showNotificationSwitch: false,
-      allowNotifications: false,
+      showNotificationSwitch: !!Firebase.messaging,
       notificationsBlocked: Notification.permission === 'denied',
+      openSnackbar: false,
     }
   }
 
@@ -83,14 +86,31 @@ export class MenuAppBar extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.initPushNotifications()
+    this.initCurrentList()
 
     // Only works if app is focused
     // TODO: display toast or badge in UI
     if(Firebase.messaging) {
       Firebase.messaging.onMessage(payload => {
-        console.log('onMessage: ', payload)
+        if(DEBUG) {
+          console.log('onMessage: ', payload)
+        }
       })
+    }
+  }
+
+  initCurrentList = () => {
+    const { user, listsOverview } = this.props
+
+    // User has no current list set
+    // Try to set a current list
+    if(!user.get('currentList')) {
+      const listId = listsOverview.length ? listsOverview[listsOverview.length - 1].value : null
+      // Set current list of user
+      if(listId) {
+        const userId = user.getIn(['details', 'uid'])
+        this.props.onSaveCurrentList({ userId, value: listId })
+      }
     }
   }
 
@@ -98,82 +118,66 @@ export class MenuAppBar extends React.PureComponent {
     this.setState({ drawerOpen: open })
   }
 
-  initNotificationSwitch = () => {
-    console.log('init switch')
-    if(Notification.permission !== 'granted') {
-      console.log('user is NOT subscribed')
-      // User is not subscribed to notifications
-      this.setState({ allowNotifications: false })
-    } else {
-      console.log('user is subscribed')
-      // User is subscribed to notifications
-      this.setState({ allowNotifications: true })
+  subscribeUser = () => {
+    this.props.onChangeNotificationStatus({ value: true })
 
-      // Update token in database in case there is a new one
+    if(Firebase.messaging) {
       Firebase.messaging
         .requestPermission()
         .then(async () => {
           const token = await Firebase.messaging.getToken()
           console.log(token)
-          // save token in db
-          // this.updateSubscriptionOnServer(token)
+          // Subscribe to all lists
+          const lists = this.props.listsOverview.map(list => list.value)
+          Firebase.subscribeUserToLists(token, lists)
+            .catch(err => {
+              this.props.onChangeNotificationStatus({ value: false })
+              if(DEBUG) {
+                console.log('Unable to subscribe to lists', err)
+              }
+            })    
+        })
+        .catch(err => {
+          this.props.onChangeNotificationStatus({ value: false })
+          if(DEBUG) {
+            console.log('Unable to get permission for notifications', err)
+          }
         })
     }
   }
 
-  initPushNotifications = () => {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      // Service Worker and Push is supported
-      this.setState({ showNotificationSwitch: true })
+  unsubscribeUser = () => {
+    console.log('unsubscribe')
+    this.props.onChangeNotificationStatus({ value: false })
 
-      // navigator.serviceWorker.register('/service-worker.js')
-      //   .then(registration => {
-      //     // Uncomment this later
-      //     Firebase.messaging.useServiceWorker(registration)
-      //     this.initNotificationSwitch()
-      //   })
-      //   .catch((err) => {
-      //     console.error('Service Worker Error', err)
-      //   })
-    } else {
-      // Push messaging is not supported
-      this.setState({ showNotificationSwitch: false })
+    if(Firebase.messaging) {
+      Firebase.messaging
+        .requestPermission()
+        .then(async () => {
+          const token = await Firebase.messaging.getToken()
+
+          // Unsubscribe from all lists
+          const lists = this.props.listsOverview.map(list => list.value)
+          Firebase.unsubscribeUserFromLists(token, lists)
+            .catch(err => {
+              this.props.onChangeNotificationStatus({ value: true })
+              if(DEBUG) {
+                console.log('Unable to unsubscribe from lists', err)
+              }
+            })    
+        })
+        .catch(err => {
+          this.props.onChangeNotificationStatus({ value: true })
+
+          if(DEBUG) {
+            console.log('Unable to get permission for notifications', err)
+          }
+        })
     }
   }
 
-  subscribeUser = () => {
-    console.log('subscribe')
-    Firebase.messaging
-      .requestPermission()
-      .then(async () => {
-        const token = await Firebase.messaging.getToken()
-        console.log(token)
-        // save token in db
-        console.log(Firebase.auth().currentUser)
-        // this.updateSubscriptionOnServer(subscription)
-        this.setState({ allowNotifications: true })
-      })
-      .catch((err) => {
-        this.setState({ allowNotifications: false })
-        console.log('Unable to get permission to notify.', err)
-      })
-  }
-
-  unsubscribeUser = () => {
-    console.log('unsubscribe')
-    
-    // TODO: How to unsubscribe
-    console.log(Firebase.auth().currentUser)
-
-    // User is unsubscribed
-    // delete token in db
-    console.log(Firebase.deleteToken())
-    // this.updateSubscriptionOnServer(null)
-    this.setState({ allowNotifications: false })
-  }
-
   toggleNotifications = () => {
-    if(this.state.allowNotifications) {
+    if(this.props.user.get('notificationStatus')) {
       this.unsubscribeUser()
     } else {
       this.subscribeUser()
@@ -196,6 +200,27 @@ export class MenuAppBar extends React.PureComponent {
     this.props.onAddList({ userId, list })
     // Set newly created list to current list
     this.props.onSaveCurrentList({ userId, value: list.id })
+
+    // Subscribe to notifications of new list
+    if(Firebase.messaging) {
+      Firebase.messaging
+        .requestPermission()
+        .then(async () => {
+          const token = await Firebase.messaging.getToken()
+
+          Firebase.subscribeUserToLists(token, [list.id])
+            .catch(err => {
+              if(DEBUG) {
+                console.log('Unable to subscribe to list', err)
+              }
+            })    
+        })
+        .catch(err => {
+          if(DEBUG) {
+            console.log('Unable to get permission for notifications', err)
+          }
+        })
+    }
   }
 
   share = (key) => {
@@ -206,9 +231,26 @@ export class MenuAppBar extends React.PureComponent {
         text: `${firstName} wants to share a list with you`,
         url: `${URL}/join/${key}`,
       })
-        .then(() => console.log('Successful share'))
-        .catch((error) => console.log('Error sharing', error))
+        .then(() => {
+          if(DEBUG) {
+            console.log('Successfuly shared data')
+          }
+        })
+        .catch(err => console.error('Error sharing', err))
     }
+  }
+
+  copyLink = (key) => {    
+    if(copy(`${URL}/join/${key}`)) {
+      this.setState({ openSnackbar: true })
+    }
+  }
+
+  handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    this.setState({ openSnackbar: false })
   }
 
   render() {
@@ -221,7 +263,6 @@ export class MenuAppBar extends React.PureComponent {
     } = this.props
 
     const {
-      allowNotifications,
       showNotificationSwitch,
       notificationsBlocked,
     } = this.state
@@ -257,7 +298,7 @@ export class MenuAppBar extends React.PureComponent {
           <ListItemSecondaryAction>
             <Switch
               onClick={() => this.toggleNotifications()}
-              checked={allowNotifications}
+              checked={user.get('notificationStatus')}
               disableRipple
               disabled={notificationsBlocked}
               classes={{
@@ -279,6 +320,29 @@ export class MenuAppBar extends React.PureComponent {
           </ListItemIcon>
           <ListItemText primary='Share this list' />
         </StyledListItem>}
+
+        {(actualList && !navigator.share) &&
+        <StyledListItem
+          button
+          onClick={() => this.copyLink(actualList.value)} >
+          <ListItemIcon>
+            <CopyIcon />
+          </ListItemIcon>
+          <ListItemText primary='Copy invite link' />
+        </StyledListItem>}
+      
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          open={this.state.openSnackbar}
+          onClose={this.handleSnackbarClose}
+          autoHideDuration={3000}
+          ContentProps={{
+            'aria-describedby': 'message-id',
+          }}
+          message={<span id="message-id">Copied invite Link</span>}/>
 
         {showInstall &&
         <StyledListItem
@@ -427,6 +491,7 @@ MenuAppBar.propTypes = {
   onSignOutUser: PropTypes.func.isRequired,
   onSaveCurrentList: PropTypes.func.isRequired,
   onAddList: PropTypes.func.isRequired,
+  onChangeNotificationStatus: PropTypes.func.isRequired,
   classes: PropTypes.object.isRequired,
   authStatus: ImmutablePropTypes.map,
   user: ImmutablePropTypes.map,
@@ -453,6 +518,7 @@ export function mapDispatchToProps(dispatch) {
     onSignOutUser: () => dispatch(signOutUser()),
     onSaveCurrentList: data => dispatch(saveCurrentList(data)),
     onAddList: data => dispatch(addList(data)),
+    onChangeNotificationStatus: data => dispatch(changeNotificationStatus(data)),
   }
 }
 
