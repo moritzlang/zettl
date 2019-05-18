@@ -6,6 +6,9 @@ import {
   SAVE_CURRENT_LIST,
   SAVE_CURRENT_LIST_SUCCESS,
   SAVE_CURRENT_LIST_ERROR,
+  CHANGE_NOTIFICATION_STATUS,
+  CHANGE_NOTIFICATION_STATUS_SUCCESS,
+  CHANGE_NOTIFICATION_STATUS_ERROR,
 } from './constants'
 
 export const signInUser = data => ({
@@ -40,4 +43,19 @@ export const currentListSaved = data => ({
 export const currentListSavingError = error => ({
   error,
   type: SAVE_CURRENT_LIST_ERROR,
+})
+
+export const changeNotificationStatus = data => ({
+  data,
+  type: CHANGE_NOTIFICATION_STATUS,
+})
+
+export const notificationStatusChanged = data => ({
+  data,
+  type: CHANGE_NOTIFICATION_STATUS_SUCCESS,
+})
+
+export const notificationStatusChangingError = error => ({
+  error,
+  type: CHANGE_NOTIFICATION_STATUS_ERROR,
 })

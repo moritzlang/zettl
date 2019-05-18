@@ -8,6 +8,9 @@ import {
   SAVE_CURRENT_LIST,
   SAVE_CURRENT_LIST_SUCCESS,
   SAVE_CURRENT_LIST_ERROR,
+  CHANGE_NOTIFICATION_STATUS,
+  CHANGE_NOTIFICATION_STATUS_SUCCESS,
+  CHANGE_NOTIFICATION_STATUS_ERROR,
 } from './constants'
 
 export const initialState = fromJS({
@@ -17,6 +20,9 @@ export const initialState = fromJS({
   currentList: null,
   saveCurrentListError: false,
   saveCurrentListLoading: false,
+  notificationStatus: false,
+  changeNotificationStatusError: false,
+  changeNotificationStatusLoading: false,
 })
 
 function userReducer(state = initialState, action) {
@@ -31,6 +37,7 @@ function userReducer(state = initialState, action) {
       return state
         .set('authLoading', false)
         .set('currentList', response.currentList)
+        .set('notificationStatus', response.notificationStatus)
         .set('details', Map(response.details))
     case SIGN_IN_USER_ERROR:
       return state
@@ -50,6 +57,18 @@ function userReducer(state = initialState, action) {
       return state
         .set('saveCurrentListLoading', false)
         .set('saveCurrentListError', action.error)
+    case CHANGE_NOTIFICATION_STATUS:
+      return state
+        .set('changeNotificationStatusLoading', true)
+        .set('changeNotificationStatusError', null)
+    case CHANGE_NOTIFICATION_STATUS_SUCCESS:
+      return state
+        .set('changeNotificationStatusLoading', false)
+        .set('notificationStatus', response.data.value)
+    case CHANGE_NOTIFICATION_STATUS_ERROR:
+      return state
+        .set('changeNotificationStatusLoading', false)
+        .set('changeNotificationStatusError', action.error)
     default:
       return state
   }
