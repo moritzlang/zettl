@@ -142,3 +142,15 @@ export const ImportantIcon = props => {
     </SvgIcon>
   )
 }
+
+export const CopyIcon = props => {
+  const colorPrimary = props.colors && props.colors.primary ? props.colors.primary : Color.ICON_PRIMARY
+  const colorSecondary = props.colors && props.colors.secondary ? props.colors.secondary : Color.ICON_SECONDARY
+  
+  return (
+    <SvgIcon {...props}>
+      <rect fill={colorSecondary} width="14" height="14" x="3" y="3" rx="2"/>
+      <rect fill={colorPrimary}  width="14" height="14" x="7" y="7" rx="2"/>
+    </SvgIcon>
+  )
+}
