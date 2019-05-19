@@ -19,6 +19,8 @@ import 'sanitize.css/sanitize.css'
 // Import root app
 import App from 'containers/App'
 
+import Firebase from 'containers/Firebase'
+
 import { DEBUG } from 'utils/config'
 
 import runtime from 'serviceworker-webpack-plugin/lib/runtime'
@@ -82,9 +84,23 @@ if (!window.Intl) {
 // Register the service worker
 if('serviceWorker' in navigator) {
   runtime.register()
-    .then(() => {
+    .then(registration => {
+      if(Firebase.messaging) {
+        Firebase.messaging
+          .usePublicVapidKey('BMmSJaZxoMRvgUp_Bf8zhn3Z3DBBvK6MsjvbcNh8gcVxqWX8-8MjB5YvZpBL_AfgRd7AaXsWmCJjOvlH87OCE_o')
+      
+        // Register service worker for firebase messaging
+        if('PushManager' in window) {
+          // Push is supported
+          Firebase.messaging.useServiceWorker(registration)
+        }
+      }
+
       if(DEBUG) {
         console.log('Service Worker registered')
       }
+    })
+    .catch(err => {
+      console.error('Could not register Service Worker', err)
     })
 }
