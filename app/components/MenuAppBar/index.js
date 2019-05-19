@@ -39,7 +39,6 @@ import {
   LogoutIcon,
   GroupIcon,
   LinkIcon,
-  CopyIcon,
 } from 'images/icons'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -89,7 +88,7 @@ export class MenuAppBar extends React.PureComponent {
     this.initCurrentList()
 
     // Only works if app is focused
-    // TODO: display toast or badge in UI
+    // TODO: Display toast or badge in UI
     if(Firebase.messaging) {
       Firebase.messaging.onMessage(payload => {
         if(DEBUG) {
@@ -126,7 +125,6 @@ export class MenuAppBar extends React.PureComponent {
         .requestPermission()
         .then(async () => {
           const token = await Firebase.messaging.getToken()
-          console.log(token)
           // Subscribe to all lists
           const lists = this.props.listsOverview.map(list => list.value)
           Firebase.subscribeUserToLists(token, lists)
@@ -135,7 +133,14 @@ export class MenuAppBar extends React.PureComponent {
               if(DEBUG) {
                 console.log('Unable to subscribe to lists', err)
               }
-            })    
+            })
+
+          Firebase.subscribeUserToLists(token, [this.props.user.getIn(['details', 'uid'])])
+            .catch(err => {
+              if(DEBUG) {
+                console.log('Unable to subscribe to personal topic', err)
+              }
+            })
         })
         .catch(err => {
           this.props.onChangeNotificationStatus({ value: false })
@@ -147,7 +152,6 @@ export class MenuAppBar extends React.PureComponent {
   }
 
   unsubscribeUser = () => {
-    console.log('unsubscribe')
     this.props.onChangeNotificationStatus({ value: false })
 
     if(Firebase.messaging) {
@@ -190,7 +194,8 @@ export class MenuAppBar extends React.PureComponent {
   }
 
   handleListCreate = (inputValue) => {
-    const userId = this.props.user.getIn(['details', 'uid'])
+    const { user } = this.props
+    const userId = user.getIn(['details', 'uid'])
     const list = {
       id: uuid(),
       title: inputValue,
@@ -201,25 +206,28 @@ export class MenuAppBar extends React.PureComponent {
     // Set newly created list to current list
     this.props.onSaveCurrentList({ userId, value: list.id })
 
+    if(user.get('notificationStatus')) {
+    // User enabled notifications
     // Subscribe to notifications of new list
-    if(Firebase.messaging) {
-      Firebase.messaging
-        .requestPermission()
-        .then(async () => {
-          const token = await Firebase.messaging.getToken()
+      if(Firebase.messaging) {
+        Firebase.messaging
+          .requestPermission()
+          .then(async () => {
+            const token = await Firebase.messaging.getToken()
 
-          Firebase.subscribeUserToLists(token, [list.id])
-            .catch(err => {
-              if(DEBUG) {
-                console.log('Unable to subscribe to list', err)
-              }
-            })    
-        })
-        .catch(err => {
-          if(DEBUG) {
-            console.log('Unable to get permission for notifications', err)
-          }
-        })
+            Firebase.subscribeUserToLists(token, [list.id])
+              .catch(err => {
+                if(DEBUG) {
+                  console.log('Unable to subscribe to list', err)
+                }
+              })    
+          })
+          .catch(err => {
+            if(DEBUG) {
+              console.log('Unable to get permission for notifications', err)
+            }
+          })
+      }
     }
   }
 
@@ -326,7 +334,7 @@ export class MenuAppBar extends React.PureComponent {
           button
           onClick={() => this.copyLink(actualList.value)} >
           <ListItemIcon>
-            <CopyIcon />
+            <LinkIcon />
           </ListItemIcon>
           <ListItemText primary='Copy invite link' />
         </StyledListItem>}
