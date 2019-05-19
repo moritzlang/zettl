@@ -18,7 +18,6 @@ const config = {
   storageBucket: 'zettl-835a3.appspot.com',
   messagingSenderId: '211177511834',
   appId: '1:211177511834:web:d2a0112906690b2f',
-  persistence: true,
 }
 // eslint-disable-next-line no-undef
 firebase.initializeApp(config)
@@ -101,9 +100,6 @@ self.addEventListener('fetch', e => {
 
   // Ignore non GET request
   if(request.method !== 'GET') {
-    if(DEBUG) {
-      console.log(`[SW] Ignore non GET request ${request.url}`)
-    }
     return
   }
 
