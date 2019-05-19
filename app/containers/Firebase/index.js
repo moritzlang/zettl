@@ -4,7 +4,7 @@ import 'firebase/firestore'
 import 'firebase/messaging'
 
 import { fromJS, List, Map, OrderedMap } from 'immutable'
-import { URL } from 'utils/config'
+import { DEBUG, URL } from 'utils/config'
 
 const config = {
   apiKey: 'AIzaSyAEky8TexWlTfJYkcUCmSMfcqdxoFeZOXA',
@@ -14,34 +14,18 @@ const config = {
   storageBucket: 'zettl-835a3.appspot.com',
   messagingSenderId: '211177511834',
   appId: '1:211177511834:web:d2a0112906690b2f',
+  serverKey: 'AAAAMSspG5o:APA91bGu3UzX5czt1FX7-v0QP-QAqOlVnqq432iQ1kxpgv5zG_r2AuMT44VU1FOD-ReF9QzowBk4qZ5KE19DY7N736BG2NH7SEOaW0-Th4Z1neWHLEGGFLRBq3c7HWtzSGMpHTlnC2uW',
 }
 
 // Initialize firebase
 if(!firebase.apps.length) {
   firebase.initializeApp(config)
-
-  if(firebase.messaging.isSupported()) {
-    firebase.messaging()
-      .usePublicVapidKey('BMmSJaZxoMRvgUp_Bf8zhn3Z3DBBvK6MsjvbcNh8gcVxqWX8-8MjB5YvZpBL_AfgRd7AaXsWmCJjOvlH87OCE_o')
-  }
   
   // Cache firestore data for offline usage
-  firebase.firestore().enablePersistence({ experimentalTabSynchronization: true })
+  firebase.firestore().enablePersistence()
     .catch(err => {
       console.error(err)
     })
-
-// // Register service worker
-// if ('serviceWorker' in navigator && 'PushManager' in window) {
-//   // Service Worker and Push is supported
-//   navigator.serviceWorker.register('sw.js')
-//     .then(registration => {
-//       firebase.messaging().useServiceWorker(registration)
-//     })
-//     .catch((err) => {
-//       console.error('Service Worker Error', err)
-//     })
-// }
 }
 
 export default {
@@ -128,12 +112,25 @@ export default {
   updateArticle: (id, data) => (
     firebase.firestore().collection('articles').doc(id).update(data)
   ),
+  addUser() {
+    return firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).set({
+      currentList: null,
+      notificationStatus: false,
+    })
+  },
+  getCurrentUser() {
+    return firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).get()
+      .then(u => u.data())
+  },
   getUser(userId) {
     return firebase.firestore().collection('users').doc(userId).get()
       .then(u => u.data())
   },
   updateUser: (id, data) => (
     firebase.firestore().collection('users').doc(id).update(data)
+  ),
+  updateCurrentUser: (data) => (
+    firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).update(data)
   ),
   joinList(userId, key) {
     return new Promise(async (resolve, reject) => {
@@ -181,13 +178,48 @@ export default {
       return resolve(`Successfully joined '${title}'`)
     })
   },
-  // addToken: (userId, token) => {
-  //   return firebase.firestore().collection('users').doc(userId).set({ token })
-  // },
-  // deleteToken: () => (
-  //   new Promise((resolve) => {
-  //     firebase.firestore().collection('users').doc(firebase.auth().currentUser).update({ token: firebase.firestore.FieldValue.delete() })
-  //       .then(res => resolve(res))
-  //   })
-  // ),
+  subscribeUserToLists(token, topics) {
+    return Promise.all(topics.map(t => (
+      fetch(`https://iid.googleapis.com/iid/v1/${token}/rel/topics/${t}`, {
+        method: 'POST',
+        headers: new Headers({
+          'Authorization': `key=${config.serverKey}`,
+        }),
+      }).then(response => {
+        if (response.status < 200 || response.status >= 400) {
+          throw new Error(`Error subscribing to topic: ${response.status} - ${response.text()}`)
+        }
+        if(DEBUG) {
+          console.log('User subscribed to topic', t)
+        }
+      }).catch(err => {
+        console.error(err)
+      })
+    )))
+  },
+  unsubscribeUserFromLists(token, topics) {
+    return Promise.all(topics.map(t => (
+      fetch(`https://iid.googleapis.com/iid/v1/${token}/rel/topics/${t}`, {
+        method: 'DELETE',
+        headers: new Headers({
+          'Authorization': `key=${config.serverKey}`,
+        }),
+      }).then(response => {
+        if (response.status < 200 || response.status >= 400) {
+          throw new Error(`Error unsubscribing from topic: ${response.status} - ${response.text()}`)
+        }
+        if(DEBUG) {
+          console.log('User unsubscribed from topic', t)
+        }
+      }).catch(err => {
+        console.error(err)
+      })
+    )))
+  },
+  saveToken: token => (
+    firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).set({ token })
+  ),
+  deleteToken: () => (
+    firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).update({ token: firebase.firestore.FieldValue.delete() })
+  ),
 }
