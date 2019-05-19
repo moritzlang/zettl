@@ -30,15 +30,38 @@ export class JoinPage extends React.PureComponent {
   }
 
   componentDidMount () {
+    const { user } = this.props
     const { key } = this.props.match.params
-    const userId = this.props.user.getIn(['details', 'uid'])
+    const userId = user.getIn(['details', 'uid'])
 
     this.setState({ isLoading: true })
 
+
     Firebase.joinList(userId, key)
       .then(res => {
+        // User enabled notifications
+        if(user.get('notificationStatus')) {
+          // Subscribe to notifications of joined list
+          if(Firebase.messaging) {
+            return Firebase.messaging
+              .requestPermission()
+              .then(async () => {
+                const token = await Firebase.messaging.getToken()
+                return Firebase.subscribeUserToLists(token, [key])
+                  .then(() => {
+                    this.setState({ message: res })
+                    this.setState({ isLoading: false })            
+                  })
+              })
+              .catch(() => {
+                throw new Error('Unable to get permission for notifications')
+              })
+          }
+        }
+
         this.setState({ message: res })
         this.setState({ isLoading: false })
+        return null
       })
       .catch(err => {
         this.setState({ message: err.message })
