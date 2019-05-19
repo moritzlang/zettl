@@ -9,6 +9,7 @@ import injectSaga from 'utils/injectSaga'
 import injectReducer from 'utils/injectReducer'
 import { createStructuredSelector } from 'reselect'
 
+import Firebase from 'containers/Firebase'
 import uuid from 'uuid/v4'
 
 import MainInput from 'components/MainInput'
@@ -30,14 +31,20 @@ export class HomePage extends React.PureComponent {
   }
 
   handleSubmit = (value) => {
+    const { user } = this.props
+    
     const newArticle = {
       id: uuid(),
-      listId: this.props.user.get('currentList'),
+      listId: user.get('currentList'),
       value,
       checked: false,
       updated_at: new Date(),
       processing: true,
       success: false,
+      creator: {
+        userId: Firebase.auth().currentUser.uid,
+        displayName: Firebase.auth().currentUser.displayName,
+      },
     }
 
     this.props.onAddArticle(newArticle)
@@ -45,7 +52,7 @@ export class HomePage extends React.PureComponent {
     /*
       After 3 seconds we mark the article as 'processed'.
       If the article was not successfully added to the
-      database at this point, there will be a error message
+      database at this point, there will be an error message
       in the UI
     */
     setTimeout(() => {
@@ -53,6 +60,7 @@ export class HomePage extends React.PureComponent {
         listId: newArticle.listId,
         articleId: newArticle.id,
       })
+      Firebase.updateArticle(newArticle.id, { processing: false })
     }, 3000)
   }
 
