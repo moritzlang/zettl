@@ -11,6 +11,8 @@ import * as Color from 'styles/colors'
 import * as Dimension from 'styles/dimensions'
 
 export const StyledAppBar = styled(AppBar)`
+  display: flex;
+  justify-content: center;
   height: ${Dimension.APP_BAR_HEIGHT};
   box-shadow: none;
   border-bottom: 2px solid #000000DE;
