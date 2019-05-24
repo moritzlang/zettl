@@ -107,8 +107,7 @@ export class MenuAppBar extends React.PureComponent {
       const listId = listsOverview.length ? listsOverview[listsOverview.length - 1].value : null
       // Set current list of user
       if(listId) {
-        const userId = user.getIn(['details', 'uid'])
-        this.props.onSaveCurrentList({ userId, value: listId })
+        this.props.onSaveCurrentList({ value: listId })
       }
     }
   }
@@ -189,8 +188,7 @@ export class MenuAppBar extends React.PureComponent {
   }
 
   handleListChange = (newValue) => {
-    const userId = this.props.user.getIn(['details', 'uid'])
-    this.props.onSaveCurrentList({ userId, value: newValue.value })
+    this.props.onSaveCurrentList({ value: newValue.value })
   }
 
   handleListCreate = (inputValue) => {
@@ -204,7 +202,7 @@ export class MenuAppBar extends React.PureComponent {
 
     this.props.onAddList({ userId, list })
     // Set newly created list to current list
-    this.props.onSaveCurrentList({ userId, value: list.id })
+    this.props.onSaveCurrentList({ value: list.id })
 
     if(user.get('notificationStatus')) {
     // User enabled notifications
