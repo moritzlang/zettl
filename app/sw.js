@@ -103,38 +103,13 @@ self.addEventListener('fetch', e => {
     return
   }
 
-  // Handle API requests to different origin
-  // and store their results in cache
-  const handleApiCall = global.caches.open(DATA_CACHE_NAME).then(cache => (
-    fetch(e.request)
-      .then((response) => {
-        // If the response was good, clone it and store it in the cache
-        if(response.status === 200) {
-          if (DEBUG) {
-            console.log('[SW] Cache asset', e.request.url)
-          }
-          cache.put(e.request.url, response.clone())
-        }
-        return response
-      })
-      .catch(() => (
-        // Network request failed, try to get it from the cache
-        global.caches.match(e.request)
-      ))
-  ))
+  // Ignore requests from different origins
+  if(requestUrl.origin !== location.origin) {
+    return
+  }
 
   const handleResource = global.caches.match(request).then(response => response || fetch(e.request))
-
-  // Prevent default fetch handling from browser
-  if(requestUrl.origin !== location.origin) {
-    // Do not cache requests from firestore because
-    // firestore is handling persistence by itself
-    if(requestUrl.origin.indexOf('firestore') < 0) {
-      e.respondWith(handleApiCall)
-    }
-  } else {
-    e.respondWith(handleResource)
-  }
+  e.respondWith(handleResource)
 })
 
 
