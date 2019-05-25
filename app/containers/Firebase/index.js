@@ -109,6 +109,9 @@ export default {
       .set(article)
       .then(() => true)
   ),
+  deleteArticle: articleId => (
+    firebase.firestore().collection('articles').doc(articleId).delete()
+  ),
   updateArticle: (id, data) => (
     firebase.firestore().collection('articles').doc(id).update(data)
   ),

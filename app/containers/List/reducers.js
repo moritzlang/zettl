@@ -4,6 +4,9 @@ import {
   ADD_ARTICLE,
   ADD_ARTICLE_SUCCESS,
   ADD_ARTICLE_ERROR,
+  DELETE_ARTICLE,
+  DELETE_ARTICLE_SUCCESS,
+  DELETE_ARTICLE_ERROR,
   TOGGLE_ARTICLE,
   TOGGLE_ARTICLE_SUCCESS,
   TOGGLE_ARTICLE_ERROR,
@@ -76,6 +79,20 @@ function listReducer(state = initialState, action) {
       return state
         .set('addArticleLoading', false)
         .set('addArticleError', action.error)
+    case DELETE_ARTICLE:
+      return state
+        .set('articleDeleting', true)
+        .set('articleDeleteError', null)
+    case DELETE_ARTICLE_SUCCESS: {
+      const { listId, articleId } = response
+      return state
+        .set('articleDeleting', false)
+        .updateIn(['lists', listId, 'articles'], articles => articles.filter(a => a.get('id') !== articleId))
+    }
+    case DELETE_ARTICLE_ERROR:
+      return state
+        .set('articleDeleting', false)
+        .set('articleDeleteError', action.error)
     case TOGGLE_ARTICLE:
       return state
         .set('articleToggling', true)

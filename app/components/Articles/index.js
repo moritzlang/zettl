@@ -15,6 +15,10 @@ export class Articles extends React.PureComponent {
     this.props.onToggle(id, value)
   }
 
+  handleDelete = id => {
+    this.props.onDelete(id)
+  }
+
   render() {
     const { articles } = this.props
     return (
@@ -29,7 +33,8 @@ export class Articles extends React.PureComponent {
               id={a.get('id')}
               value={a.get('value')}
               checked={a.get('checked')}
-              onToggle={this.handleCheckToggle} />
+              onToggle={this.handleCheckToggle}
+              onDelete={this.handleDelete} />
           )).reverse()
             // TODO: Style empty state
             : (
@@ -53,10 +58,13 @@ Articles.propTypes = {
     })
   ),
   onToggle: PropTypes.func,
+  onDelete: PropTypes.func,
 }
 
 Articles.defaultProps = {
   articles: List(),
+  onToggle: () => {},
+  onDelete: () => {},
 }
 
 export default Articles

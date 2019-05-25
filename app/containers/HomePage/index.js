@@ -15,7 +15,7 @@ import uuid from 'uuid/v4'
 import MainInput from 'components/MainInput'
 import Articles from 'components/Articles'
 
-import { toggleArticle, addArticle, articleProcessed } from 'containers/Article/actions'
+import { toggleArticle, addArticle, articleProcessed, deleteArticle } from 'containers/Article/actions'
 import { loadLists } from 'containers/List/actions'
 import { makeSelectLists } from 'containers/List/selectors'
 import listSaga from 'containers/List/sagas'
@@ -72,6 +72,13 @@ export class HomePage extends React.PureComponent {
     })
   }
 
+  handleDelete = id => {
+    this.props.onDeleteArticle({
+      listId: this.props.user.get('currentList'),
+      articleId: id,
+    })
+  }
+
   render() {
     const { lists, user } = this.props
     const currentList = user ? user.get('currentList') : null
@@ -90,7 +97,10 @@ export class HomePage extends React.PureComponent {
               onSubmit={this.handleSubmit}
             />
             {!lists.get('listsLoading') &&
-            <Articles onToggle={this.handleCheckToggle} articles={articles} />}
+            <Articles
+              onToggle={this.handleCheckToggle}
+              onDelete={this.handleDelete}
+              articles={articles} />}
           </div>
           :
           <div>
@@ -111,6 +121,7 @@ export class HomePage extends React.PureComponent {
 HomePage.propTypes = {
   onLoadLists: PropTypes.func.isRequired,
   onToggleArticle: PropTypes.func.isRequired,
+  onDeleteArticle: PropTypes.func.isRequired,
   onAddArticle: PropTypes.func.isRequired,
   onArticleProcessed: PropTypes.func.isRequired,
   user: ImmutablePropTypes.map,
@@ -146,6 +157,7 @@ export function mapDispatchToProps(dispatch) {
   return {
     onLoadLists: () => dispatch(loadLists()),
     onToggleArticle: data => dispatch(toggleArticle(data)),
+    onDeleteArticle: data => dispatch(deleteArticle(data)),
     onAddArticle: data => dispatch(addArticle(data)),
     onArticleProcessed: data => dispatch(articleProcessed(data)),
   }

@@ -5,8 +5,10 @@ import Firebase from 'containers/Firebase'
 import {
   articlesLoaded,
   articlesLoadingError,
-  articlesToggled,
-  articlesTogglingError,
+  articleToggled,
+  articleTogglingError,
+  articleDeleted,
+  articleDeletingError,
   articleAdded,
   articleAddedError,
   articleProcessed,
@@ -27,9 +29,19 @@ export function* toggleArticle(payload) {
   try {
     const { articleId, value } = payload.data
     yield fork(Firebase.updateArticle, articleId, { checked: value })
-    yield put(articlesToggled(payload.data))
+    yield put(articleToggled(payload.data))
   } catch (err) {
-    yield put(articlesTogglingError(err))
+    yield put(articleTogglingError(err))
+  }
+}
+
+export function* deleteArticle(payload) {
+  try {
+    const { articleId } = payload.data
+    yield fork(Firebase.deleteArticle, articleId)
+    yield put(articleDeleted(payload.data))
+  } catch (err) {
+    yield put(articleDeletingError(err))
   }
 }
 

@@ -16,6 +16,10 @@ export class Articles extends React.PureComponent {
     this.props.onToggle(id, value)
   }
 
+  handleDeleteClick = id => {
+    this.props.onDelete(id)
+  }
+
   render() {
     const { id, value, checked, status } = this.props
 
@@ -46,7 +50,7 @@ export class Articles extends React.PureComponent {
             <Status>
               <StatusInfo>Bad connection, could not save article.</StatusInfo>
             </Status>}
-          <ListItemSecondaryAction>
+          <ListItemSecondaryAction onClick={() => this.handleDeleteClick(id)}>
             <Tooltip title='Delete' placement='left'>
               <IconButton
                 aria-label='Delete'>
@@ -66,12 +70,15 @@ Articles.propTypes = {
   value: PropTypes.string.isRequired,
   checked: PropTypes.bool,
   onToggle: PropTypes.func,
+  onDelete: PropTypes.func,
   status: PropTypes.bool,
 }
 
 Articles.defaultProps = {
   checked: false,
   status: true,
+  onToggle: () => {},
+  onDelete: () => {},
 }
 
 export default Articles

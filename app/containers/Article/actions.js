@@ -5,6 +5,9 @@ import {
   ADD_ARTICLE,
   ADD_ARTICLE_SUCCESS,
   ADD_ARTICLE_ERROR,
+  DELETE_ARTICLE,
+  DELETE_ARTICLE_SUCCESS,
+  DELETE_ARTICLE_ERROR,
   TOGGLE_ARTICLE,
   TOGGLE_ARTICLE_SUCCESS,
   TOGGLE_ARTICLE_ERROR,
@@ -43,17 +46,32 @@ export const articleAddedError = data => ({
   type: ADD_ARTICLE_ERROR,
 })
 
+export const deleteArticle = data => ({
+  data,
+  type: DELETE_ARTICLE,
+})
+
+export const articleDeleted = data => ({
+  data,
+  type: DELETE_ARTICLE_SUCCESS,
+})
+
+export const articleDeletingError = data => ({
+  data,
+  type: DELETE_ARTICLE_ERROR,
+})
+
 export const toggleArticle = data => ({
   data,
   type: TOGGLE_ARTICLE,
 })
 
-export const articlesToggled = data => ({
+export const articleToggled = data => ({
   data,
   type: TOGGLE_ARTICLE_SUCCESS,
 })
 
-export const articlesTogglingError = error => ({
+export const articleTogglingError = error => ({
   error,
   type: TOGGLE_ARTICLE_ERROR,
 })
