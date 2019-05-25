@@ -8,7 +8,7 @@ import { connect } from 'react-redux'
 import { Map } from 'immutable'
 import { createStructuredSelector } from 'reselect'
 
-import { makeSelectUser } from 'containers/User/selectors'
+import { makeSelectUser } from 'services/User/selectors'
 
 import Firebase from 'containers/Firebase'
 
