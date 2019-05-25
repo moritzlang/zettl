@@ -74,7 +74,7 @@ export class MenuAppBar extends React.PureComponent {
     this.state = {
       drawerOpen: false,
       showNotificationSwitch: !!Firebase.messaging,
-      notificationsBlocked: Notification.permission === 'denied',
+      notificationsBlocked: ('Notification' in window) ? (Notification.permission === 'denied') : false,
       openSnackbar: false,
     }
   }
