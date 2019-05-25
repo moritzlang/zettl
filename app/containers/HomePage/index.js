@@ -15,12 +15,12 @@ import uuid from 'uuid/v4'
 import MainInput from 'components/MainInput'
 import Articles from 'components/Articles'
 
-import { toggleArticle, addArticle, articleProcessed, deleteArticle } from 'containers/Article/actions'
-import { loadLists } from 'containers/List/actions'
-import { makeSelectLists } from 'containers/List/selectors'
-import listSaga from 'containers/List/sagas'
-import listReducer from 'containers/List/reducers'
-import { makeSelectUser } from 'containers/User/selectors'
+import { toggleArticle, addArticle, articleProcessed, deleteArticle } from 'services/Article/actions'
+import { loadLists } from 'services/List/actions'
+import { makeSelectLists } from 'services/List/selectors'
+import listSaga from 'services/List/sagas'
+import listReducer from 'services/List/reducers'
+import { makeSelectUser } from 'services/User/selectors'
 
 import { Wrapper } from './Styles'
 

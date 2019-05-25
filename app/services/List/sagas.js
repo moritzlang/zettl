@@ -1,8 +1,8 @@
 import { put, takeLatest } from 'redux-saga/effects'
 import Firebase from 'containers/Firebase'
 
-import { toggleArticle, addArticle, deleteArticle, processArticle } from 'containers/Article/sagas'
-import { TOGGLE_ARTICLE, ADD_ARTICLE, DELETE_ARTICLE, PROCESS_ARTICLE } from 'containers/Article/constants'
+import { toggleArticle, addArticle, deleteArticle, processArticle } from 'services/Article/sagas'
+import { TOGGLE_ARTICLE, ADD_ARTICLE, DELETE_ARTICLE, PROCESS_ARTICLE } from 'services/Article/constants'
 
 import { listsLoaded, listsLoadingError, listAdded, listAddedError } from './actions'
 import { LOAD_LISTS, ADD_LIST } from './constants'

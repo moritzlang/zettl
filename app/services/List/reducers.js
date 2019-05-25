@@ -13,7 +13,7 @@ import {
   PROCESS_ARTICLE,
   PROCESS_ARTICLE_SUCCESS,
   PROCESS_ARTICLE_ERROR,
-} from 'containers/Article/constants'
+} from 'services/Article/constants'
 
 import {
   LOAD_LISTS,

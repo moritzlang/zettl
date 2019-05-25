@@ -13,15 +13,14 @@ import { createStructuredSelector } from 'reselect'
 import Firebase from 'containers/Firebase'
 import { DEBUG, URL } from 'utils/config'
 
-import { makeSelectUser, makeSelectAuthStatus } from 'containers/User/selectors'
-import { signOutUser, saveCurrentList, changeNotificationStatus } from 'containers/User/actions'
-import userSaga from 'containers/User/sagas'
-import userReducer from 'containers/User/reducers'
+import { makeSelectUser, makeSelectAuthStatus } from 'services/User/selectors'
+import { signOutUser, saveCurrentList, changeNotificationStatus } from 'services/User/actions'
+import userSaga from 'services/User/sagas'
 
-import { makeSelectListsOverview } from 'containers/List/selectors'
-import { addList } from 'containers/List/actions'
-import listSaga from 'containers/List/sagas'
-import listReducer from 'containers/List/reducers'
+import { makeSelectListsOverview } from 'services/List/selectors'
+import { addList } from 'services/List/actions'
+import listSaga from 'services/List/sagas'
+import listReducer from 'services/List/reducers'
 
 import uuid from 'uuid/v4'
 import copy from 'copy-to-clipboard'
@@ -528,7 +527,6 @@ export function mapDispatchToProps(dispatch) {
   }
 }
 
-const withUserReducer = injectReducer({key: 'user', reducer: userReducer})
 const withUserSaga = injectSaga({key: 'user', saga: userSaga})
 const withListReducer = injectReducer({key: 'lists', reducer: listReducer})
 const withListSaga = injectSaga({key: 'lists', saga: listSaga})
@@ -541,7 +539,6 @@ const withConnect = connect(
 export default compose(
   withListReducer,
   withListSaga,
-  withUserReducer,
   withUserSaga,
   withConnect,
   withStyles(styles),
