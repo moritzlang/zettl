@@ -4,7 +4,6 @@ import { Map } from 'immutable'
 import { compose } from 'redux'
 import { connect } from 'react-redux'
 import injectSaga from 'utils/injectSaga'
-import injectReducer from 'utils/injectReducer'
 import { createStructuredSelector } from 'reselect'
 import { Switch, Route } from 'react-router-dom'
 
@@ -22,10 +21,9 @@ import HomePage from 'containers/HomePage/Loadable'
 import LoginPage from 'containers/LoginPage/Loadable'
 import JoinPage from 'containers/JoinPage/Loadable'
 import NotFoundPage from 'containers/NotFoundPage/Loadable'
-import { signInUser } from 'containers/User/actions'
-import userSaga from 'containers/User/sagas'
-import userReducer from 'containers/User/reducers'
-import { makeSelectAuthStatus } from 'containers/User/selectors'
+import { signInUser } from 'services/User/actions'
+import userSaga from 'services/User/sagas'
+import { makeSelectAuthStatus } from 'services/User/selectors'
 import RedirectRoute from './RedirectRoute'
 
 import theme from './theme'
@@ -135,7 +133,6 @@ export function mapDispatchToProps(dispatch) {
   }
 }
 
-const withReducer = injectReducer({key: 'user', reducer: userReducer})
 const withSaga = injectSaga({key: 'user', saga: userSaga})
 
 const withConnect = connect(
@@ -144,7 +141,6 @@ const withConnect = connect(
 )
 
 export default compose(
-  withReducer,
   withSaga,
   withConnect
 )(App)
