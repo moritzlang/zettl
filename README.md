@@ -34,7 +34,7 @@ npm run deploy
 - [x] Keep 'undelivered' state of article after page reload
 - [ ] Don't fetch all lists at once
 - [ ] User can delete lists
-- [ ] User can delete articles
+- [x] User can delete articles
 - [ ] Do un- and subscribing on server side because of exposed serverKey
 - [ ] Redirect to the affected list on notificationclick
 
